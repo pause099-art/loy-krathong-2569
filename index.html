@@ -239,11 +239,108 @@ textarea::placeholder,.inp::placeholder{color:rgba(255,255,255,.38)}
 .sheet.typing .preview-wrap,.sheet.typing .sheet-hint,.sheet.typing .steps{display:none}
 .sheet.typing .step-body{padding-top:10px}
 .sheet.typing{max-height:calc(var(--vvh,100dvh) - 144px)}
+
+/* ---------- countdown gate (flip clock) ---------- */
+.gate{position:fixed;inset:0;z-index:40;display:flex;padding:calc(18px + env(safe-area-inset-top)) 14px calc(20px + env(safe-area-inset-bottom));background:radial-gradient(ellipse 120% 80% at 50% 28%,rgba(18,8,48,.30) 0%,rgba(6,2,22,.86) 78%);overflow-y:auto;transition:opacity .9s ease .9s}
+.gate.opening{opacity:0;pointer-events:none}
+.gate-in{width:min(530px,100%);margin:auto;display:flex;flex-direction:column;align-items:center;text-align:center;gap:clamp(8px,1.8vh,14px)}
+.gate-lang{position:fixed;top:calc(14px + env(safe-area-inset-top));right:14px;width:40px;height:40px;border-radius:50%;background:var(--glass);border:1px solid var(--line);z-index:41}
+.gate-kicker{font-size:clamp(14px,4.2vw,20px);letter-spacing:4px;color:var(--gold);font-weight:600;text-shadow:0 0 14px rgba(255,211,107,.5)}
+.gate-title{margin:0;font-size:clamp(38px,11.5vw,66px);font-weight:800;line-height:1.02;white-space:nowrap;background:linear-gradient(90deg,#ffd36b,#ff7ad9 55%,#8b7bff);-webkit-background-clip:text;background-clip:text;color:transparent;padding:0 .06em}
+.gate-sub{margin:0;font-size:clamp(15px,4.3vw,19px);color:rgba(255,255,255,.88)}
+.fclock{width:100%;box-sizing:border-box;display:flex;align-items:stretch;gap:clamp(5px,1.6vw,9px);padding:clamp(8px,2.4vw,12px);border-radius:22px;background:linear-gradient(145deg,#ff6b8f 0%,#ff7a45 55%,#ffb347 100%);box-shadow:0 18px 50px rgba(255,90,90,.35),inset 0 2px 0 rgba(255,255,255,.35),inset 0 -3px 0 rgba(0,0,0,.18)}
+.aclock{flex:none;width:clamp(58px,17vw,82px);aspect-ratio:1;align-self:center;border-radius:50%;position:relative;filter:drop-shadow(0 4px 8px rgba(60,10,40,.45))}
+.aclock svg{display:block;width:100%;height:100%;overflow:visible}
+.aclock svg g[id^=ac]{transform-box:view-box;transform-origin:50px 50px}
+#acS{transition:transform .28s cubic-bezier(.4,2.2,.5,1)}
+.ac-num{font:700 8.6px Kanit,sans-serif;fill:#2a2140}
+.ac-brand{font-size:7px;opacity:.85}
+.aclock i{position:absolute;left:50%;bottom:50%;transform-origin:50% 100%;border-radius:3px;background:#1b1b22}
+.aclock .h{width:4px;height:26%;margin-left:-2px}.aclock .m{width:3px;height:36%;margin-left:-1.5px}.aclock .s{width:1.5px;height:40%;margin-left:-.75px;background:#ff2d55}
+.aclock b{position:absolute;left:50%;top:50%;width:7px;height:7px;margin:-3.5px;border-radius:50%;background:#ff2d55}
+.aclock em{position:absolute;inset:6%;border-radius:50%;background:repeating-conic-gradient(from -1deg,#1b1b22 0 2deg,transparent 2deg 30deg);-webkit-mask:radial-gradient(circle,transparent 0 80%,#000 81%);mask:radial-gradient(circle,transparent 0 80%,#000 81%)}
+.fl{position:relative;display:grid;place-items:center;border-radius:9px;background:linear-gradient(#25252d 0 50%,#16161c 50% 100%);color:#fff;font-weight:700;line-height:1;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 5px 12px rgba(0,0,0,.45);transform-origin:50% 50%}
+.fl::after{content:'';position:absolute;left:0;right:0;top:calc(50% - 1px);height:2px;background:rgba(0,0,0,.7)}
+.fl{perspective:320px}
+.fl .sz{visibility:hidden;font-size:inherit;letter-spacing:inherit;color:inherit}
+.fl .h>span{font-size:inherit;letter-spacing:inherit;color:#fff}
+.fl .h{position:absolute;left:0;right:0;height:50%;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.fl .h>span{position:absolute;left:0;right:0;height:200%;display:grid;place-items:center}
+.fl .h.up{top:0;border-radius:9px 9px 0 0;background:#25252d;transform-origin:50% 100%}
+.fl .h.up>span{top:0}
+.fl .h.dn{bottom:0;border-radius:0 0 9px 9px;background:#16161c;transform-origin:50% 0}
+.fl .h.dn>span{top:-100%}
+.fl .h.fu{z-index:2;animation:flapUp .26s cubic-bezier(.55,0,.9,.6) forwards;background:linear-gradient(#2c2c35,#202027)}
+.fl .h.fd{z-index:2;transform:rotateX(90deg);animation:flapDn .3s cubic-bezier(.2,.7,.35,1.25) .26s forwards}
+@keyframes flapUp{from{transform:rotateX(0)}to{transform:rotateX(-90deg);filter:brightness(.55)}}
+@keyframes flapDn{from{transform:rotateX(90deg);filter:brightness(1.4)}to{transform:rotateX(0);filter:brightness(1)}}
+.fl::after{z-index:3}
+@keyframes flipT{0%{transform:perspective(400px) rotateX(0)}35%{transform:perspective(400px) rotateX(-88deg);filter:brightness(.6)}100%{transform:perspective(400px) rotateX(0)}}
+.fclock .fl{flex:1.1;min-width:0;font-size:clamp(20px,6.4vw,30px);padding:clamp(10px,3vw,16px) 2px}
+.fclock .fl.big{flex:.8;font-size:clamp(26px,8vw,40px)}
+.fclock .fl.yr{flex:1.25;display:flex;flex-direction:column;justify-content:center;gap:3px;font-size:clamp(17px,5.2vw,28px)}
+.fclock .fl.yr small{font-size:clamp(9px,2.4vw,13px);font-weight:500;letter-spacing:1px;color:rgba(255,255,255,.65);line-height:1}
+.fclock .fl.yr::after{display:none}
+.aclock .face{position:absolute;inset:0}
+.aclock .tk{position:absolute;left:50%;top:4%;width:2px;height:7%;margin-left:-1px;background:#1b1b22;transform-origin:50% 657%;border-radius:1px}
+.aclock .tk.q{width:3px;margin-left:-1.5px;height:9%;background:#ff2d55;transform-origin:50% 511%}
+.aclock .nm{position:absolute;width:24%;height:24%;margin:-12% 0 0 -12%;display:grid;place-items:center;font-size:clamp(9px,2.6vw,13px);font-weight:700;color:#1b1b22;line-height:1}
+@media (max-width:440px){.fclock{gap:5px;padding:8px}.fclock .fl{font-size:clamp(14px,4.6vw,24px);padding:10px 1px}.fclock .fl.big{font-size:clamp(20px,6.6vw,34px)}.fclock .fl.yr{font-size:clamp(14px,4.4vw,22px)}.aclock{width:clamp(54px,16vw,70px)}}
+.gate-lbl{font-size:13px;letter-spacing:3px;color:var(--mute);margin-top:4px}
+.cd{width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(6px,2vw,10px)}
+.cd .u{display:flex;flex-direction:column;gap:6px}
+.cd .fl{font-size:clamp(28px,9.5vw,50px);padding:clamp(12px,3.4vw,18px) 0}
+.cd span{font-size:12px;letter-spacing:1px;color:rgba(255,255,255,.75)}
+.gate-msg{font-size:clamp(16px,4.6vw,20px);font-weight:600;min-height:1.3em}
+.gate .btn{width:auto;flex:none;padding:12px 26px}
+.gate-safe{font-size:12px;color:rgba(141,255,192,.9);padding:7px 14px;border-radius:999px;border:1px solid rgba(141,255,192,.35);background:rgba(20,60,40,.25)}
+.gate-credit{font-size:11px;color:rgba(255,255,255,.42)}
+#toast{z-index:45}
+.gated .top,.gated #landing,.gated #credit{visibility:hidden}
+.gate{padding-top:calc(60px + env(safe-area-inset-top))}
+@media (max-height:640px){.gate-in{gap:6px}.cd .fl{padding:9px 0}.fclock .fl{padding:8px 2px}.gate .btn{padding:10px 22px}.gate-lbl{margin-top:0}}
 </style>
 </head>
 <body>
 <canvas id="scene"></canvas>
 <audio id="bgm" loop preload="none" src="bgm.mp3"></audio>
+
+<section id="gate" class="gate hidden">
+  <button class="lang-btn gate-lang" id="gateLang" data-noi18n aria-label="Switch to English">EN</button>
+  <div class="gate-in">
+    <div class="gate-kicker">✦ ๒๕๖๙ · ONLINE ✦</div>
+    <h1 class="gate-title">LOY KRATHONG</h1>
+    <p class="gate-sub">เปิดให้ลอยพร้อมกันทั้งประเทศ</p>
+    <div class="fclock" aria-label="วันเปิดระบบ">
+      <div class="aclock" aria-hidden="true"><svg viewBox="0 0 100 100">
+        <defs><radialGradient id="acF" cx="50%" cy="38%" r="65%"><stop offset="0" stop-color="#ffffff"/><stop offset=".75" stop-color="#f6f3fa"/><stop offset="1" stop-color="#e4dfec"/></radialGradient>
+        <linearGradient id="acB" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4a3a72"/><stop offset=".5" stop-color="#241a3d"/><stop offset="1" stop-color="#120d20"/></linearGradient>
+        <linearGradient id="acR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".55"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient></defs>
+        <circle cx="50" cy="50" r="49.5" fill="url(#acB)"/>
+        <circle cx="50" cy="50" r="48" fill="none" stroke="url(#acR)" stroke-width="1"/>
+        <circle cx="50" cy="50" r="44" fill="url(#acF)"/>
+        <g id="acTicks"></g>
+        <text x="50" y="68.5" text-anchor="middle" class="ac-brand">🪷</text>
+        <g id="acH"><path d="M48.4 55 L49.2 29 Q50 26.8 50.8 29 L51.6 55 Z" fill="#1d1730"/></g>
+        <g id="acM"><path d="M48.9 56 L49.5 15 Q50 13.2 50.5 15 L51.1 56 Z" fill="#1d1730"/></g>
+        <g id="acS"><line x1="50" y1="62" x2="50" y2="12" stroke="#ff2d78" stroke-width="1" stroke-linecap="round"/><circle cx="50" cy="61" r="2.3" fill="#ff2d78"/></g>
+        <circle cx="50" cy="50" r="3.4" fill="#1d1730"/><circle cx="50" cy="50" r="1.6" fill="#ff2d78"/>
+      </svg></div>
+      <div class="fl" id="gDay"></div><div class="fl big" id="gDate"></div><div class="fl" id="gMon"></div><div class="fl" id="gYear"></div>
+    </div>
+    <div class="gate-lbl">นับถอยหลัง</div>
+    <div class="cd">
+      <div class="u"><div class="fl" id="cdD">00</div><span>วัน</span></div>
+      <div class="u"><div class="fl" id="cdH">00</div><span>ชั่วโมง</span></div>
+      <div class="u"><div class="fl" id="cdM">00</div><span>นาที</span></div>
+      <div class="u"><div class="fl" id="cdS">00</div><span>วินาที</span></div>
+    </div>
+    <div class="gate-msg" id="gateMsg">กลับมาเจอกันคืนวันเพ็ญ 🌕</div>
+    <button class="btn primary" id="gateShare">💞 ชวนเพื่อนไว้ก่อน</button>
+    <div class="gate-safe">🛡️ ไม่ต้องล็อกอิน · ไม่ขอข้อมูลส่วนตัว · ไม่มีการโอนเงิน</div>
+    <div class="gate-credit">พัฒนาโดย Porch_za😎</div>
+  </div>
+</section>
 
 <header class="top">
   <button class="brand" id="brandBtn" title="กลับหน้าแรก"><span class="dot"></span><span class="bt">Loy Krathong</span></button>
@@ -1136,6 +1233,11 @@ EN={
 'เรียบ':'Plain','ล้านนา':'Lanna','กนก':'Kanok flame','ประจำยาม':'Prajamyam','ดอกบัว':'Lotus','ดอกพิกุล':'Pikul','ใบไม้':'Leaves','ดวงดาว':'Stars',
 'ประกาย':'Sparkle','จันทร์เสี้ยว':'Crescents','ก้อนเมฆ':'Clouds','คลื่นน้ำ':'Waves','จุด':'Dots','เส้นทอง':'Gold stripes','ผ้าขาวม้า':'Plaid',
 'ข้าวหลามตัด':'Diamonds','ก้นหอย':'Spiral',
+'เปิดให้ลอยพร้อมกันทั้งประเทศ':'Floating opens for everyone on','วันเปิดระบบ':'Opening date','นับถอยหลัง':'COUNTDOWN',
+'วัน':'DAYS','ชั่วโมง':'HRS','นาที':'MIN','วินาที':'SEC','กลับมาเจอกันคืนวันเพ็ญ 🌕':'See you on the full-moon night 🌕',
+'💞 ชวนเพื่อนไว้ก่อน':'💞 Invite friends now','🎉 เปิดแล้ว! ลอยได้เลย':'🎉 We’re open! Start floating',
+'มาลอยกระทงออนไลน์ด้วยกันนะ 🪷 เปิดคืนวันอังคารที่ ๒๔ พ.ย. ๒๕๖๙':'Let’s float krathongs online together 🪷 Opens Tuesday, 24 Nov 2026',
+'✅ คัดลอกลิงก์แล้ว ส่งให้เพื่อนได้เลย':'✅ Link copied — send it to your friends',
 '1 ดวง':'1 lantern','3 ดวง':'3 lanterns','5 ดวง':'5 lanterns','9 ดวง · ฝูงโคม':'9 · a whole swarm'};
 const BLESS_TH=clone(BLESS);
 const BLESS_EN={
@@ -1171,6 +1273,7 @@ function setLang(l,init){
   locData();locDom();
   const lb=$('#langBtn');lb.textContent=LANG==='en'?'ไทย':'EN';lb.setAttribute('aria-label',LANG==='en'?'เปลี่ยนเป็นภาษาไทย':'Switch to English');lb.title=lb.getAttribute('aria-label');
   try{updCount();}catch(_){}
+  try{Gate.relang();}catch(_){}
   if(init)return;
   try{if(window.__online&&window.__online.on)Online.showTotals();}catch(_){}
   if(!builderEl.classList.contains('hidden')){renderOpts();showStep(step);}
@@ -1580,7 +1683,60 @@ window.__online=Online;Together.init();Online.poll();
 let lastAct=Date.now();['pointerdown','keydown','touchstart'].forEach(ev=>addEventListener(ev,()=>{const idle=Date.now()-lastAct>30*60e3;lastAct=Date.now();if(idle)Online.poll();},{passive:true}));
 // poll every 60s while the tab is visible and someone touched the page in the last 30 min (keeps CDN/bandwidth cost low at 100k users)
 setInterval(()=>{if(!document.hidden&&Date.now()-lastAct<30*60e3)Online.poll();},60000);
+/* ---------------- COUNTDOWN GATE (ปิดระบบไว้จนถึงเวลาเปิด) ---------------- */
+const OPEN_AT=Date.parse('2026-11-24T00:00:00+07:00'); // ← เวลาเปิดระบบ (เวลาไทย) แก้ตรงนี้ที่เดียว
+const Gate=(()=>{const el=$('#gate');let skew=0,timer=null,last={},opened=false;
+  const preview=(()=>{try{if(new URLSearchParams(location.search).get('preview')==='porch2569')sessionStorage.setItem('lk_prev','1');return sessionStorage.getItem('lk_prev')==='1';}catch(_){return false;}})();
+  const now=()=>Date.now()+skew;
+  const num=v=>{v=String(v).padStart(2,'0');return LANG==='en'?v:thaiNum(v);};
+  const fmtP=(o)=>new Intl.DateTimeFormat(LANG==='en'?'en-US':'th-TH',Object.assign({timeZone:'Asia/Bangkok'},o)).format(new Date(OPEN_AT));
+  // split-flap: top half folds down over the old value, then the bottom half lands (like a real flip clock)
+  function tile(id,v){if(last[id]===v)return;const e=$('#'+id),old=last[id];last[id]=v;const q=c=>e.querySelector(c);
+    if(!q('.sz'))e.innerHTML='<span class="sz"></span><div class="h up" aria-hidden="true"><span></span></div><div class="h dn" aria-hidden="true"><span></span></div>';
+    e.querySelectorAll('.fu,.fd').forEach(x=>x.remove());
+    q('.sz').textContent=v;q('.up span').textContent=v;
+    if(old===undefined||document.hidden){q('.dn span').textContent=v;return;}
+    q('.dn span').textContent=old;
+    const fu=document.createElement('div'),fd=document.createElement('div');
+    fu.className='h up fu';fu.setAttribute('aria-hidden','true');fd.setAttribute('aria-hidden','true');fu.innerHTML='<span></span>';fu.firstChild.textContent=old;
+    fd.className='h dn fd';fd.innerHTML='<span></span>';fd.firstChild.textContent=v;
+    fd.addEventListener('animationend',()=>{q('.dn span').textContent=v;fu.remove();fd.remove();});
+    e.append(fu,fd);}
+  function dateTiles(){
+    tile('gDay',LANG==='en'?fmtP({weekday:'short'}).toUpperCase():fmtP({weekday:'long'}).replace(/^วัน/,''));
+    tile('gDate',num(+new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Bangkok',day:'numeric'}).format(new Date(OPEN_AT))));
+    tile('gMon',LANG==='en'?fmtP({month:'short'}).toUpperCase():fmtP({month:'short'}));
+    const y=+new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Bangkok',year:'numeric'}).format(new Date(OPEN_AT));
+    tile('gYear',LANG==='en'?String(y%100).padStart(2,'0'):thaiNum(String((y+543)%100).padStart(2,'0')));face();}
+  function face(){const g=$('#acTicks');let h='';
+    for(let i=0;i<60;i++){const hr=i%5===0,a=i*6*Math.PI/180,r1=hr?37.2:40.6,r2=42.4,x1=50+r1*Math.sin(a),y1=50-r1*Math.cos(a),x2=50+r2*Math.sin(a),y2=50-r2*Math.cos(a);
+      h+=`<line x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}" stroke="${i===0?'#ff2d78':hr?'#1d1730':'#bdb5cc'}" stroke-width="${hr?(i%15===0?2.4:1.6):.6}" stroke-linecap="round"/>`;}
+    [[12,0],[3,90],[6,180],[9,270]].forEach(([n,d])=>{const a=d*Math.PI/180,x=50+29.5*Math.sin(a),y=50-29.5*Math.cos(a)+3;h+=`<text class="ac-num" x="${x.toFixed(2)}" y="${y.toFixed(2)}" text-anchor="middle">${LANG==='en'?n:thaiNum(n)}</text>`;});
+    g.innerHTML=h;}
+  let secDeg=null;
+  function hands(){const b=new Date(now()+7*3600e3),h=b.getUTCHours()%12,m=b.getUTCMinutes(),sc=b.getUTCSeconds();
+    $('#acH').style.transform=`rotate(${h*30+m*.5}deg)`;$('#acM').style.transform=`rotate(${m*6+sc*.1}deg)`;
+    let d=sc*6;if(secDeg!==null){while(d<secDeg-1)d+=360;}secDeg=d;$('#acS').style.transform=`rotate(${d}deg)`;}
+  function tick(){hands();const ms=OPEN_AT-now();if(ms<=0)return open(true);
+    const s=Math.floor(ms/1000);tile('cdD',num(Math.floor(s/86400)));tile('cdH',num(Math.floor(s%86400/3600)));tile('cdM',num(Math.floor(s%3600/60)));tile('cdS',num(s%60));}
+  function open(anim){if(opened)return;opened=true;clearInterval(timer);
+    if(!anim){el.classList.add('hidden');document.body.classList.remove('gated');return;}
+    ['cdD','cdH','cdM','cdS'].forEach(id=>tile(id,num(0)));$('#gateMsg').textContent=t('🎉 เปิดแล้ว! ลอยได้เลย');
+    for(let i=0;i<7;i++)setTimeout(()=>{try{launch(rnd(W*.15,W*.85),rnd(HOR*.15,HOR*.55));}catch(_){}},i*260);
+    document.body.classList.remove('gated');el.classList.add('opening');setTimeout(()=>el.classList.add('hidden'),1900);}
+  function start(){if(preview||now()>=OPEN_AT)return;el.classList.remove('hidden');document.body.classList.add('gated');relang();timer=setInterval(tick,1000);
+    // ใช้เวลาจากเซิร์ฟเวอร์ กันนาฬิกาเครื่องผู้ใช้ตั้งผิด
+    fetch(location.pathname+'?t='+Date.now(),{method:'HEAD',cache:'no-store'}).then(r=>{const d=Date.parse(r.headers.get('date')||'');if(d&&Math.abs(d-Date.now())>3000){skew=d-Date.now();tick();}}).catch(()=>{});}
+  function relang(){if(opened||el.classList.contains('hidden'))return;last={};dateTiles();tick();
+    const b=$('#gateLang');b.textContent=LANG==='en'?'ไทย':'EN';b.setAttribute('aria-label',LANG==='en'?'เปลี่ยนเป็นภาษาไทย':'Switch to English');}
+  $('#gateLang').onclick=()=>setLang(LANG==='en'?'th':'en');
+  $('#gateShare').onclick=async()=>{const url=location.origin+location.pathname,text=t('มาลอยกระทงออนไลน์ด้วยกันนะ 🪷 เปิดคืนวันอังคารที่ ๒๔ พ.ย. ๒๕๖๙');
+    try{if(navigator.share){await navigator.share({text,url,title:t('Loy Krathong ๒๕๖๙')});return;}}catch(err){if(err&&err.name==='AbortError')return;}
+    try{await navigator.clipboard.writeText(text+'\n'+url);toast(t('✅ คัดลอกลิงก์แล้ว ส่งให้เพื่อนได้เลย'));}catch(_){toast(url);}};
+  return {start,relang};
+})();
 setLang(LANG,true);
+Gate.start();
 })();
 </script>
 </body>
