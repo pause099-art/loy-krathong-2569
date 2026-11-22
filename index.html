@@ -37,6 +37,9 @@ input,textarea{font-family:inherit}
 .chip-top b{font-weight:600;color:var(--gold)}
 .icon-btn{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:17px;transition:transform .2s}
 .icon-btn:active,.chip-top:active{transform:scale(.92)}
+.lang-btn{font-size:13px;font-weight:700;letter-spacing:.3px;font-family:inherit;color:#fff}
+@media (max-width:480px){.brand .bt{display:none}.brand{width:40px;height:40px;flex:none;justify-content:center;border-radius:50%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14)}.brand .dot{width:13px;height:13px}}
+@media (max-width:360px){.brand{width:36px;height:36px}}
 
 /* Buttons */
 .btn{border-radius:999px;padding:13px 24px;font-size:16px;font-weight:600;transition:transform .2s,box-shadow .2s,opacity .2s;white-space:nowrap}
@@ -243,11 +246,12 @@ textarea::placeholder,.inp::placeholder{color:rgba(255,255,255,.38)}
 <audio id="bgm" loop preload="none" src="bgm.mp3"></audio>
 
 <header class="top">
-  <button class="brand" id="brandBtn" title="กลับหน้าแรก"><span class="dot"></span>Loy Krathong</button>
+  <button class="brand" id="brandBtn" title="กลับหน้าแรก"><span class="dot"></span><span class="bt">Loy Krathong</span></button>
   <div class="top-actions">
     <button class="icon-btn glass hidden" id="homeBtn" aria-label="หน้าแรก">🏠</button>
     <button class="icon-btn glass" id="infoBtn" aria-label="รู้จักลอยกระทง">📖</button>
     <button class="chip-top glass" id="countChip" title="กระทงของฉัน">🪷 <b id="countNum">0</b> &nbsp;🏮 <b id="countLNum">0</b></button>
+    <button class="icon-btn glass lang-btn" id="langBtn" data-noi18n aria-label="Switch to English">EN</button>
     <button class="icon-btn glass" id="soundBtn" aria-label="เปิด/ปิดเสียง">🔇</button>
   </div>
 </header>
@@ -429,6 +433,11 @@ const scene=$('#scene'),ctx=scene.getContext('2d');
 const pv=$('#preview'),pctx=pv.getContext('2d');
 const W0wide=700;let W=0,H=0,DPR=1,HOR=0,PW=0,PH=0;
 
+/* ---------------- LANGUAGE (default ไทย) ---------------- */
+let LANG=(()=>{try{const q=new URLSearchParams(location.search).get('lang');if(q==='en'||q==='th'){localStorage.setItem('lk_lang',q);return q;}return localStorage.getItem('lk_lang')==='en'?'en':'th';}catch(_){return 'th';}})();
+let EN={};
+const t=s=>LANG==='en'&&EN[s]!=null?EN[s]:s;
+
 /* ---------------- DATA ---------------- */
 const BASES=[
  {id:'leaf',name:'ใบตอง',tag:'คลาสสิก',e:'🍃'},
@@ -497,7 +506,7 @@ try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.items))s
 function save(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}}
 function updCount(){const on=window.__online&&window.__online.on;const f=n=>Number(n||0).toLocaleString('th-TH');
   $('#countNum').textContent=f(on?window.__online.total:store.count);$('#countLNum').textContent=f(on?window.__online.totalL:(store.countL||0));
-  $('#countChip').title=on?'ยอดลอยรวมของทุกคน · แตะเพื่อดูกระทงของฉัน':'กระทงของฉัน';}
+  $('#countChip').title=t(on?'ยอดลอยรวมของทุกคน · แตะเพื่อดูกระทงของฉัน':'กระทงของฉัน');}
 updCount();
 
 /* ---------------- SCENE STATE ---------------- */
@@ -993,7 +1002,7 @@ function frame(now){
   if(uk){
     if(uk.state==='floating'){const p=Math.min(1,(now-uk.t0)/11000);const e=1-Math.pow(1-p,2.2);
       uk.z=uk.z0+(0.07-uk.z0)*e;uk.x=uk.x0+Math.sin(p*3)*W*.06+e*W*.08;
-      if(p>=1){if(uk.pairWith&&ambient.includes(uk.pairWith)){const fr=uk.pairWith;ambient.push({x:fr.x+ROf(fr.z)*2.3,z:fr.z,vx:fr.vx,b:fr.b+1,cfg:uk.cfg,mine:true,entry:uk.entry,pair:true});fr.pair=true;toast('💞 กระทงของคุณลอยเคียงคู่กันแล้ว');}
+      if(p>=1){if(uk.pairWith&&ambient.includes(uk.pairWith)){const fr=uk.pairWith;ambient.push({x:fr.x+ROf(fr.z)*2.3,z:fr.z,vx:fr.vx,b:fr.b+1,cfg:uk.cfg,mine:true,entry:uk.entry,pair:true});fr.pair=true;toast(t('💞 กระทงของคุณลอยเคียงคู่กันแล้ว'));}
       else ambient.push({x:uk.x,z:uk.z,vx:10,b:0,cfg:uk.cfg,mine:true,entry:uk.entry});uk=null;}}
     if(uk){
       const R=ROf(uk.z),y=yOf(uk.z)+Math.sin(t*1.6)*R*.05;
@@ -1047,6 +1056,135 @@ const Snd={ac:null,on:false,m:null,
   whoosh(){this.nz(.5,1800,.08);}
 };
 
+/* ---------------- LANGUAGE: English dictionary + switcher ---------------- */
+EN={
+// top bar / landing
+'กลับหน้าแรก':'Back to home','หน้าแรก':'Home','รู้จักลอยกระทง':'About Loy Krathong','กระทงของฉัน':'My krathongs','เปิด/ปิดเสียง':'Sound on/off',
+'ยอดลอยรวมของทุกคน · แตะเพื่อดูกระทงของฉัน':'Total floated by everyone · tap to see mine',
+'✦ ๒๕๖๙ · ONLINE ✦':'✦ 2026 · ONLINE ✦','✦  ๒๕๖๙ · ONLINE  ✦':'✦  2026 · ONLINE  ✦','Loy Krathong ๒๕๖๙':'Loy Krathong 2026','Loy Krathong ๒๕๖๙ · Online':'Loy Krathong 2026 · Online',
+'ทำกระทงหรือโคมลอยในสไตล์คุณ':'Craft a krathong or lantern your way,','อธิษฐาน แล้วปล่อยให้':'make a wish, then let ','สายน้ำและท้องฟ้าพาไป ✨':'the river and sky carry it away ✨',
+'🪷 ลอยกระทง':'🪷 Krathong','🏮 ลอยโคม':'🏮 Lantern',
+'🪷 แตะกระทงเพื่อรับคำอวยพร':'🪷 Tap a krathong for a blessing','🎆 แตะท้องฟ้าเพื่อจุดพลุ':'🎆 Tap the sky for fireworks',
+'🛡️ ไม่ต้องล็อกอิน · ไม่ขอข้อมูลส่วนตัว · ไม่มีการโอนเงิน':'🛡️ No login · No personal data · No payments',
+'พัฒนาโดย Porch_za😎':'Developed by Porch_za😎',
+// builder
+'🎲 สุ่ม':'🎲 Random','เลือกฐานกระทง':'Choose a base','กระทงรูปสัตว์น่ารัก 🐾':'Cute animal krathongs 🐾',
+'ดอกไม้':'Flowers','เลือกได้สูงสุด 4 แบบ':'pick up to 4','สีโทนตกแต่ง':'Accent color','ตกแต่ง ✨':'Decorate ✨',
+'สีเทียน':'Candle color','แบบเทียน':'Candle style','ไฟประดับรอบกระทง':'Fairy lights','ของแต่งพิเศษ':'Special topper','ธูป':'Incense',
+'🪔 ธูป 3 ดอก':'🪔 3 incense sticks','บูชาตามประเพณี':'a traditional offering',
+'เลือกทรงโคม':'Choose a lantern shape','สีกระดาษโคม':'Paper color','ลายกระดาษโคม':'Paper pattern','จำนวนโคมที่จะปล่อย':'How many lanterns',
+'อธิษฐานในใจ…':'Make a wish…','พิมพ์คำอธิษฐานของคุณ เช่น ขอให้ปีหน้าปังกว่าเดิม 🙏':'Type your wish, e.g. May next year be even better 🙏',
+'ชื่อของคุณ (ไม่ใส่ก็ได้)':'Your name (optional)','🌏 ให้คนอื่นเห็นคำอธิษฐานในแม่น้ำ':'🌏 Show my wish on the shared river',
+'ปิดไว้ = กระทงลอยร่วมได้ แต่ข้อความเป็นความลับ':'Off = your krathong still floats, but your wish stays private',
+'ย้อนกลับ':'Back','ถัดไป →':'Next →','🏮 ไปปล่อยโคม':'🏮 Go release','🌊 ไปลอยกระทง':'🌊 Go float',
+'แตะพื้นหลังหรือโลโก้มุมซ้ายบน':'Tap the background or the top-left logo','เพื่อกลับหน้าแรก':'to go home',
+'พิมพ์คำอธิษฐานสักนิดนะ ✍️':'Write a little wish first ✍️','สี':'Color','สีโคม':'Lantern color',
+'ฐาน':'Base','ตกแต่ง':'Decor','อธิษฐาน':'Wish','ทรงโคม':'Shape','ลวดลาย':'Pattern',
+// float
+'ปัดขึ้น ⇡ เพื่อปล่อยกระทง':'Swipe up ⇡ to float your krathong','ปัดขึ้น ⇡ เพื่อปล่อยโคม':'Swipe up ⇡ to release your lantern',
+'✏️ แก้ไข':'✏️ Edit','🙏 ลอยเลย':'🙏 Float it','🏮 ปล่อยโคม':'🏮 Release',
+'🏮 โคมกำลังลอยขึ้นฟ้า… ขอให้สมหวัง':'🏮 Your lantern is rising… may your wish come true',
+'🌊 กระทงกำลังลอยไป… ขอให้สมหวัง':'🌊 Your krathong is drifting away… may your wish come true',
+'💞 กระทงของคุณลอยเคียงคู่กันแล้ว':'💞 Your krathongs are floating side by side',
+// result / card / wish
+'ขอให้สมปรารถนา':'May your wish come true','🔮 เลขมงคลของคุณ':'🔮 Your lucky number','เพื่อความบันเทิงและเป็นสิริมงคลเท่านั้น':'Just for fun and good luck',
+'📸 สร้างการ์ดแชร์':'📸 Make a share card','💞 ชวนเพื่อน/แฟนมาลอยด้วยกัน':'💞 Invite a friend to float together','แชร์ทาง LINE':'Share on LINE',
+'🪷 ลอยอีกกระทง':'🪷 Float another','🏮 ลองลอยโคม':'🏮 Try a lantern','🏮 ปล่อยโคมอีก':'🏮 Release another','🪷 ไปลอยกระทง':'🪷 Float a krathong','🏮 ไปลอยโคม':'🏮 Release a lantern',
+'การ์ดกระทงของคุณ':'Your krathong card','การ์ดลอยกระทง':'Loy Krathong card','⬇️ บันทึกรูป':'⬇️ Save image','📤 แชร์':'📤 Share',
+'แชร์ข้อความชวนทาง LINE':'Invite friends on LINE','บนมือถือ กดค้างที่รูปเพื่อบันทึกได้เลย':'On mobile, long-press the image to save it',
+'✅ คัดลอกข้อความชวนเพื่อนแล้ว — บันทึกรูปแล้วแปะลง LINE / IG ได้เลย':'✅ Invite text copied — save the image and post it on LINE / IG',
+'บันทึกรูปแล้วแชร์ลง LINE / IG / Facebook ได้เลย':'Save the image and share it on LINE / IG / Facebook',
+'ลอยโคมออนไลน์ · ปลอดภัย ไม่เสี่ยงไฟไหม้ 🏮':'Online lanterns · safe, no fire risk 🏮','ลอยกระทงออนไลน์ · ขยะเป็นศูนย์ 🌱':'Online krathong · zero waste 🌱',
+'คำอวยพร':'Blessing','🚩 รายงานข้อความไม่เหมาะสม':'🚩 Report inappropriate message','🔒 คำอธิษฐานนี้เป็นความลับ · ':'🔒 This wish is private · ',
+'ขอบคุณที่ช่วยแจ้ง เราซ่อนข้อความนี้ให้แล้ว':'Thanks for reporting. We’ve hidden this message.','กระทงของคุณ 💖':'Your krathong 💖','🔮 เลขมงคล':'🔮 Lucky no.',
+'คำอวยพรจากสายน้ำ ✨':'A blessing from the river ✨','แตะกระทงใบอื่นเพื่อรับคำอวยพรเพิ่ม':'Tap other krathongs for more blessings',
+// invite / history / online
+'ลอยด้วยกันนะ':'Let’s float together','🪷 ลอยกระทงคู่กัน':'🪷 Float side by side','ดูกระทงของเพื่อนก่อน':'See my friend’s krathong first','เพื่อน':'A friend',
+'💙 กระทงที่มีหัวใจสีฟ้าคือของเพื่อนคุณ':'💙 The krathong with a blue heart is your friend’s',
+'เปิดจากเว็บจริงบน Netlify เพื่อสร้างลิงก์ชวนเพื่อนได้':'Open the live website to create an invite link',
+'✅ คัดลอกลิงก์ชวนแล้ว ส่งให้เพื่อนได้เลย':'✅ Invite link copied — send it to a friend',
+'ลอยถี่เกินไปนิด รอสักครู่แล้วลองใหม่นะ':'Whoa, a bit too fast! Wait a moment and try again',
+'📸 การ์ด':'📸 Card','ยังไม่มีรายการ — มาลอยกระทงหรือลอยโคมกันเลย 🪷🏮':'Nothing yet — float a krathong or release a lantern 🪷🏮',
+// info modal
+'🌕 ลอยกระทง ๒๕๖๙':'🌕 Loy Krathong 2026','ตรงกับ':'Falls on ','วันอังคารที่ ๒๔ พฤศจิกายน ๒๕๖๙':'Tuesday, 24 November 2026',
+'คืนวันเพ็ญ ขึ้น ๑๕ ค่ำ เดือน ๑๒ คืนที่พระจันทร์เต็มดวงสว่างที่สุดของปี':'— the full-moon night of the 12th lunar month, when the moon shines its brightest of the year.',
+'💧 ลอยไปเพื่ออะไร':'💧 Why we float',
+'เพื่อขอบคุณและขอขมาพระแม่คงคา ผู้ให้น้ำหล่อเลี้ยงชีวิต และเป็นการปล่อยความทุกข์ เรื่องไม่ดี ให้ลอยไปกับสายน้ำ':'To thank and apologize to Phra Mae Khongkha, the goddess of water who sustains life — and to let sorrow and bad luck drift away with the current.',
+'🪷 ตำนานนางนพมาศ':'🪷 The legend of Nang Noppamat',
+'เล่าสืบกันมาว่าสมัยสุโขทัย นางนพมาศได้ประดิษฐ์กระทงเป็นรูปดอกบัวบาน จึงกลายเป็นต้นแบบกระทงที่เราเห็นกันทุกวันนี้':'Legend says that in the Sukhothai era, Nang Noppamat crafted a krathong shaped like a blooming lotus — the model for the krathongs we float today.',
+'🏮 ยี่เป็ง ลอยโคมแบบล้านนา':'🏮 Yi Peng — Lanna sky lanterns',
+'ทางภาคเหนือเรียกเทศกาลนี้ว่า “ยี่เป็ง” นิยมปล่อยโคมลอยขึ้นฟ้าเพื่อบูชาพระเกตุแก้วจุฬามณีบนสวรรค์ และปล่อยเคราะห์ร้ายให้ลอยไป':'In Northern Thailand the festival is called “Yi Peng”. People release lanterns into the sky to honor the Phra Ket Kaew Chulamani relic in heaven and to send misfortune away.',
+'🌱 ทำไมลอยออนไลน์':'🌱 Why float online?',
+'ทุกปีมีกระทงหลายแสนใบต้องเก็บจากแม่น้ำลำคลอง ลอยออนไลน์ได้อธิษฐานเหมือนกัน ไม่มีขยะ ไม่เสี่ยงไฟไหม้จากโคม':'Every year hundreds of thousands of krathongs have to be cleared from rivers and canals. Floating online lets you make the same wish — with zero waste and no lantern fire risk.',
+'🛡️ เว็บนี้ปลอดภัย':'🛡️ This site is safe','ไม่ต้องล็อกอิน ไม่ขอเบอร์โทร ไม่ขอข้อมูลบัตร และ':'No login, no phone number, no card details, and ',
+'ไม่มีการโอนเงินใด ๆ':'no payments of any kind','ถ้าเจอเว็บลอยกระทงที่ขอข้อมูลเหล่านี้ ระวังมิจฉาชีพนะครับ':'. If a Loy Krathong site ever asks for these, watch out for scams!',
+// data lists
+'ใบตอง':'Banana leaf','คลาสสิก':'Classic','กลีบบัว':'Lotus petals','หวานละมุน':'Sweet & soft','ใบเตย':'Pandan','หอมสดชื่น':'Fresh scent',
+'หยวกกล้วย':'Banana trunk','ดั้งเดิม':'Traditional','ใบบัว':'Lotus leaf','เรียบง่าย':'Simple','กาบมะพร้าว':'Coconut husk','มินิมอล':'Minimal',
+'ขนมปัง':'Bread','ปลาได้กิน':'Fish food','ทองคำ':'Gold','รวยปัง':'Rich vibes','คริสตัล':'Crystal','ใสวิ้ง':'Sparkly','ซากุระ':'Sakura','สายหวาน':'Sweet',
+'กาแล็กซี่':'Galaxy','ล้ำจักรวาล':'Cosmic','สายรุ้ง':'Rainbow','สดใส':'Bright','นีออน':'Neon','สายวัยรุ่น':'Gen Z',
+'เต่า':'Turtle','อายุยืน':'Long life','ปลา':'Fish','มีกินมีใช้':'Abundance','หงส์':'Swan','สง่างาม':'Graceful','เป็ด':'Duck','ก๊าบ ๆ':'Quack!',
+'กบ':'Frog','อ๊บ ๆ':'Ribbit!','ช้าง':'Elephant','มงคลไทย':'Thai luck','แมว':'Cat','ทาสแมว':'Cat lover','กระต่าย':'Rabbit','กระต่ายจันทร์':'Moon rabbit',
+'หมี':'Bear','นุ่มนิ่ม':'Fluffy','หมู':'Pig','อ้วนพี':'Chubby',
+'ดาวเรือง':'Marigold','กุหลาบ':'Rose','มะลิ':'Jasmine','กล้วยไม้':'Orchid','บานไม่รู้โรย':'Globe amaranth','บัวตูม':'Lotus bud','ทานตะวัน':'Sunflower',
+'ดอกรัก':'Crown flower','ลีลาวดี':'Plumeria','อัญชัน':'Butterfly pea','ไฮเดรนเยีย':'Hydrangea',
+'🕯️ คลาสสิก':'🕯️ Classic','🌀 เกลียว':'🌀 Spiral','👫 เทียนคู่':'👫 Twin','📏 สูงเพรียว':'📏 Tall','🪷 ฐานบัว':'🪷 Lotus base',
+'ปิด':'Off','🔆 วอร์ม':'🔆 Warm','💡 สีโทน':'💡 Accent','🌈 สายรุ้ง':'🌈 Rainbow',
+'ไม่มี':'None','หัวใจ':'Heart','ดาว':'Star','ผีเสื้อ':'Butterfly','มงกุฎ':'Crown','จันทร์':'Moon','วิ้ง':'Sparkle','นำโชค':'Lucky clover','ถุงเงิน':'Money bag',
+'ทั่วไป':'General','ความรัก':'Love','การงาน':'Work','การเงิน':'Money','สุขภาพ':'Health','ครอบครัว':'Family','การเรียน':'Study',
+'ยี่เป็ง':'Yi Peng','ทรงกระบอก':'Cylinder','นิยมตามงาน':'Festival favorite',
+'เรียบ':'Plain','ล้านนา':'Lanna','กนก':'Kanok flame','ประจำยาม':'Prajamyam','ดอกบัว':'Lotus','ดอกพิกุล':'Pikul','ใบไม้':'Leaves','ดวงดาว':'Stars',
+'ประกาย':'Sparkle','จันทร์เสี้ยว':'Crescents','ก้อนเมฆ':'Clouds','คลื่นน้ำ':'Waves','จุด':'Dots','เส้นทอง':'Gold stripes','ผ้าขาวม้า':'Plaid',
+'ข้าวหลามตัด':'Diamonds','ก้นหอย':'Spiral',
+'1 ดวง':'1 lantern','3 ดวง':'3 lanterns','5 ดวง':'5 lanterns','9 ดวง · ฝูงโคม':'9 · a whole swarm'};
+const BLESS_TH=clone(BLESS);
+const BLESS_EN={
+ general:['May the bad drift away with the river, leaving only good things ✨','May everything you set your heart on come true','May this year fill your heart with joy every day','May the candlelight guide you to all things good'],
+ love:['May your love glow like the full moon 🌕','May the right person find you — and stay for a long, long time 💞','May your heart receive as much love as you give','May your relationships grow smoother and deeper every day'],
+ work:['May work go great — a boss who loves you, clients who adore you 🚀','May every project sail through, with no 2 a.m. emergencies','May you land that promotion and do work you love','May every effort bear beautiful fruit'],
+ money:['May money flow in like the river on Loy Krathong night 💸','May your wallet never run dry and transfers keep rolling in','May unexpected luck come your way — and may you spend it wisely','May debts vanish fast and savings grow'],
+ health:['May you stay strong and sleep well every night 🌿','May body and mind bloom like a flower','May you stay far from illness, with energy for everything you love','May your mind be calm and your body refreshed every day'],
+ family:['May your family be warm and together 🏡','May everyone at home stay healthy and together for many years','May your home be full of laughter','May everyone in your family reach their dreams'],
+ study:['May you ace your exams with great grades 📚','May you remember everything you read and answer every question','May you get into the school of your dreams','May today’s effort lead to a bright future']};
+const LOC_LISTS=[[BASES,['name','tag']],[FLOWERS,['name']],[CSTYLES,['n']],[LIGHTS,['n']],[TOPPERS,['n']],[CATS,['n']],[LSHAPES,['n','tag']],[LPATTERNS,['n']],[LQTY,['n']]];
+function locData(){
+  LOC_LISTS.forEach(([arr,keys])=>arr.forEach(o=>{o._th=o._th||{};keys.forEach(k=>{if(o._th[k]==null)o._th[k]=o[k];o[k]=t(o._th[k]);});}));
+  Object.keys(BLESS_TH).forEach(k=>{BLESS[k]=LANG==='en'?BLESS_EN[k]:BLESS_TH[k];});
+}
+// static page text: remember the Thai original of each text node / attribute once, then swap
+const I18N_TXT=[],I18N_ATTR=[];let i18nScanned=false;
+const hasThai=v=>/[฀-๿]/.test(v||'');
+function trKeep(o){const m=o.match(/^(\s*)([\s\S]*?)(\s*)$/);const en=EN[m[2]];if(LANG!=='en'||en==null)return o;return (/^[.,]/.test(en)?'':m[1])+en+m[3];}
+function locDom(){
+  if(!i18nScanned){i18nScanned=true;
+    const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;
+    while((n=w.nextNode())){const p=n.parentElement;if(!p||p.closest('script,style,[data-noi18n]'))continue;if(hasThai(n.nodeValue))I18N_TXT.push([n,n.nodeValue]);}
+    document.querySelectorAll('[title],[aria-label],[placeholder],[alt]').forEach(el=>{if(el.closest('[data-noi18n]'))return;
+      ['title','aria-label','placeholder','alt'].forEach(a=>{const v=el.getAttribute(a);if(hasThai(v))I18N_ATTR.push([el,a,v]);});});
+  }
+  I18N_TXT.forEach(([n,o])=>{if(n.isConnected)n.nodeValue=trKeep(o);});
+  I18N_ATTR.forEach(([el,a,o])=>el.setAttribute(a,trKeep(o)));
+}
+function setLang(l,init){
+  LANG=l==='en'?'en':'th';try{localStorage.setItem('lk_lang',LANG);}catch(_){}
+  document.documentElement.lang=LANG;document.title=t('Loy Krathong ๒๕๖๙ · Online');
+  locData();locDom();
+  const lb=$('#langBtn');lb.textContent=LANG==='en'?'ไทย':'EN';lb.setAttribute('aria-label',LANG==='en'?'เปลี่ยนเป็นภาษาไทย':'Switch to English');lb.title=lb.getAttribute('aria-label');
+  try{updCount();}catch(_){}
+  if(init)return;
+  try{if(window.__online&&window.__online.on)Online.showTotals();}catch(_){}
+  if(!builderEl.classList.contains('hidden')){renderOpts();showStep(step);}
+  if(!$('#floatUI').classList.contains('hidden'))floatLabels();
+  if(!$('#histModal').classList.contains('hidden'))renderHist();
+  if(!$('#resultModal').classList.contains('hidden')&&curEntry){resultLabels(curEntry);if(curEntry.lucky)$('#lkTh').textContent=luckyLabel(curEntry.lucky);
+    const cat=CATS.find(c=>c.id===curEntry.cat);$('#blessTxt').textContent=pick(BLESS[curEntry.cat]||BLESS.general);setLine($('#lineBtn1'),curEntry);}
+  if(!$('#wishModal').classList.contains('hidden'))closeModal('wishModal');
+  if(!$('#cardModal').classList.contains('hidden')&&curEntry)makeCard(curEntry);
+  if(!$('#inviteModal').classList.contains('hidden'))closeModal('inviteModal');
+  try{Snd.chime();}catch(_){}
+}
+$('#langBtn').onclick=e=>{e.stopPropagation();setLang(LANG==='en'?'th':'en');};
+
 /* ---------------- UI ---------------- */
 const builderEl=$('#builder');
 let step=0;
@@ -1055,18 +1193,18 @@ function renderOpts(){
   $('#animalOpts').innerHTML=BASES.filter(b=>b.animal).map(bo).join('');
   $('#baseOpts').innerHTML=BASES.filter(b=>!b.animal).map(b=>`<button class="opt ${cfg.base===b.id?'sel':''}" data-v="${b.id}"><span class="e">${b.e}</span><span class="n">${b.name}</span><span class="t">${b.tag}</span></button>`).join('');
   $('#flowerOpts').innerHTML=FLOWERS.map(f=>`<button class="chip ${cfg.flowers.includes(f.id)?'sel':''}" data-v="${f.id}"><span class="sw" style="background:${f.c};color:${f.c}"></span>${f.name}</button>`).join('');
-  $('#accentOpts').innerHTML=ACCENTS.map(c=>`<button class="swatch ${cfg.accent===c?'sel':''}" data-v="${c}" style="background:${c};--c:${c}" aria-label="สี"></button>`).join('');
-  $('#candleOpts').innerHTML=CANDLES.map(c=>`<button class="swatch ${cfg.candle===c?'sel':''}" data-v="${c}" style="background:${c};--c:${c}" aria-label="สีเทียน"></button>`).join('');
+  $('#accentOpts').innerHTML=ACCENTS.map(c=>`<button class="swatch ${cfg.accent===c?'sel':''}" data-v="${c}" style="background:${c};--c:${c}" aria-label="${t('สี')}"></button>`).join('');
+  $('#candleOpts').innerHTML=CANDLES.map(c=>`<button class="swatch ${cfg.candle===c?'sel':''}" data-v="${c}" style="background:${c};--c:${c}" aria-label="${t('สีเทียน')}"></button>`).join('');
   $('#catOpts').innerHTML=CATS.map(c=>`<button class="chip ${cfg.cat===c.id?'sel':''}" data-v="${c.id}">${c.e} ${c.n}</button>`).join('');
   $('#cstyleOpts').innerHTML=CSTYLES.map(c=>`<button class="chip ${cfg.cstyle===c.id?'sel':''}" data-v="${c.id}">${c.n}</button>`).join('');
   $('#lightOpts').innerHTML=LIGHTS.map(c=>`<button class="chip ${cfg.lights===c.id?'sel':''}" data-v="${c.id}">${c.n}</button>`).join('');
   $('#topperOpts').innerHTML=TOPPERS.map(o=>`<button class="opt ${cfg.topper===o.id?'sel':''}" data-v="${o.id}"><span class="e">${o.e}</span><span class="n">${o.n}</span></button>`).join('');
   $('#tgIncense').classList.toggle('on',cfg.incense);$('#tgPublic').classList.toggle('on',cfg.pub!==false);
   $('#lshapeOpts').innerHTML=LSHAPES.map(o=>`<button class="opt ${cfgL.shape===o.id?'sel':''}" data-v="${o.id}"><span class="e">${o.e}</span><span class="n">${o.n}</span><span class="t">${o.tag}</span></button>`).join('');
-  $('#lcolorOpts').innerHTML=LCOLORS.map(c=>`<button class="swatch ${cfgL.color===c?'sel':''}" data-v="${c}" style="background:${c==='rainbow'?'linear-gradient(135deg,#ff4d6d,#ffb703,#4dff9a,#4cc9f0,#9b5de5)':c};--c:${c==='rainbow'?'#ffb703':c}" aria-label="สีโคม"></button>`).join('');
+  $('#lcolorOpts').innerHTML=LCOLORS.map(c=>`<button class="swatch ${cfgL.color===c?'sel':''}" data-v="${c}" style="background:${c==='rainbow'?'linear-gradient(135deg,#ff4d6d,#ffb703,#4dff9a,#4cc9f0,#9b5de5)':c};--c:${c==='rainbow'?'#ffb703':c}" aria-label="${t('สีโคม')}"></button>`).join('');
   $('#lpatOpts').innerHTML=LPATTERNS.map(o=>`<button class="opt ${cfgL.pattern===o.id?'sel':''}" data-v="${o.id}"><span class="e">${o.e}</span><span class="n">${o.n}</span></button>`).join('');
   $('#lqtyOpts').innerHTML=LQTY.map(o=>`<button class="chip ${cfgL.qty===o.v?'sel':''}" data-v="${o.v}">🏮 ${o.n}</button>`).join('');
-  if(mode==='lantern'){const sh=LSHAPES.find(o=>o.id===cfgL.shape),pt=LPATTERNS.find(o=>o.id===cfgL.pattern);$('#pvLabel').textContent=`${sh.e} โคม${sh.n} · ${pt.n} · ${cfgL.qty} ดวง`;return;}
+  if(mode==='lantern'){const sh=LSHAPES.find(o=>o.id===cfgL.shape),pt=LPATTERNS.find(o=>o.id===cfgL.pattern);$('#pvLabel').textContent=LANG==='en'?`${sh.e} ${sh.n} lantern · ${pt.n} · ×${cfgL.qty}`:`${sh.e} โคม${sh.n} · ${pt.n} · ${cfgL.qty} ดวง`;return;}
   const b=BASES.find(x=>x.id===cfg.base);
   const tp=TOPPERS.find(o=>o.id===cfg.topper);
   $('#pvLabel').textContent=`${b.e} ${b.name} · ${cfg.flowers.map(id=>FLOWERS.find(f=>f.id===id).name).join(', ')}${tp&&tp.id!=='none'?' · '+tp.e:''}`;
@@ -1102,15 +1240,15 @@ const STEPS={krathong:[[0,'ฐาน'],[1,'ดอกไม้'],[2,'ตกแต
 const lastStep=()=>STEPS[mode].length-1;
 function showStep(n){
   n=Math.max(0,Math.min(n,lastStep()));step=n;const el=STEPS[mode][n][0];
-  $('#steps').innerHTML=STEPS[mode].map(([,lb],i)=>`<div class="s ${i===n?'on':''} ${i<n?'done':''}" data-i="${i}"><i></i>${lb}</div>`).join('');
+  $('#steps').innerHTML=STEPS[mode].map(([,lb],i)=>`<div class="s ${i===n?'on':''} ${i<n?'done':''}" data-i="${i}"><i></i>${t(lb)}</div>`).join('');
   document.querySelectorAll('.step').forEach(s=>s.classList.toggle('on',+s.dataset.step===el));
-  $('#backBtn').disabled=n===0;$('#nextBtn').textContent=n<lastStep()?'ถัดไป →':mode==='lantern'?'🏮 ไปปล่อยโคม':'🌊 ไปลอยกระทง';
+  $('#backBtn').disabled=n===0;$('#nextBtn').textContent=t(n<lastStep()?'ถัดไป →':mode==='lantern'?'🏮 ไปปล่อยโคม':'🌊 ไปลอยกระทง');
   builderEl.querySelector('.step-body').scrollTop=0;
 }
 $('#backBtn').onclick=()=>step>0&&showStep(step-1);
 $('#nextBtn').onclick=()=>{
   if(step<lastStep())return showStep(step+1);
-  if(!cfg.wish.trim()){const w=$('#wish');w.classList.remove('shake');void w.offsetWidth;w.classList.add('shake');$('#wishErr').innerHTML='<span class="err">พิมพ์คำอธิษฐานสักนิดนะ ✍️</span>';w.focus();return;}
+  if(!cfg.wish.trim()){const w=$('#wish');w.classList.remove('shake');void w.offsetWidth;w.classList.add('shake');$('#wishErr').innerHTML='<span class="err">'+t('พิมพ์คำอธิษฐานสักนิดนะ ✍️')+'</span>';w.focus();return;}
   goFloat();
 };
 function openBuilder(n=0,m){
@@ -1121,16 +1259,17 @@ function openBuilder(n=0,m){
 }
 function goFloat(){
   builderEl.classList.add('hidden');$('#floatUI').classList.remove('hidden');
-  if(mode==='lantern'){ul={state:'ready',x:W/2,y:H*.5,cfg:clone(cfgL),offs:lanternOffsets(cfgL.qty)};uk=null;
-    $('#swipeHint').textContent='ปัดขึ้น ⇡ เพื่อปล่อยโคม';$('#floatBtn').textContent='🏮 ปล่อยโคม';}
-  else{uk={state:'ready',x:W/2,z:.4,cfg:clone(cfg)};ul=null;
-    $('#swipeHint').textContent='ปัดขึ้น ⇡ เพื่อปล่อยกระทง';$('#floatBtn').textContent='🙏 ลอยเลย';}
+  if(mode==='lantern'){ul={state:'ready',x:W/2,y:H*.5,cfg:clone(cfgL),offs:lanternOffsets(cfgL.qty)};uk=null;}
+  else{uk={state:'ready',x:W/2,z:.4,cfg:clone(cfg)};ul=null;}
+  floatLabels();
 }
+function floatLabels(){const L=mode==='lantern';
+  $('#swipeHint').textContent=t(L?'ปัดขึ้น ⇡ เพื่อปล่อยโคม':'ปัดขึ้น ⇡ เพื่อปล่อยกระทง');$('#floatBtn').textContent=t(L?'🏮 ปล่อยโคม':'🙏 ลอยเลย');}
 function release(){
   if(!ul||ul.state!=='ready')return;
   ul.state='rising';ul.t0=performance.now();
   $('#floatUI').classList.add('hidden');Snd.whoosh();if(Snd.on&&Snd.ac)[783.99,987.77,1174.66].forEach((f,i)=>Snd.tone(f,2.2,'sine',.06,.1+i*.22));
-  toast('🏮 โคมกำลังลอยขึ้นฟ้า… ขอให้สมหวัง');
+  toast(t('🏮 โคมกำลังลอยขึ้นฟ้า… ขอให้สมหวัง'));
   const entry={type:'lantern',wish:cfg.wish.trim(),name:cfg.name.trim(),cat:cfg.cat,cfg:clone(cfgL),date:Date.now(),pub:cfg.pub!==false};Online.send(entry);
   step=0;cfg.wish='';$('#wish').value='';$('#wishCount').textContent='0/140';cfgL.seed=Math.random()*100;
   store.countL=(store.countL||0)+1;store.items.unshift(entry);store.items=store.items.slice(0,50);save();updCount();
@@ -1144,7 +1283,7 @@ function float(){
   const R=ROf(uk.z),y=yOf(uk.z);const n=performance.now();
   for(let i=0;i<3;i++)ripples.push({x:uk.x,y:y+R*.22,r:R*(.6+i*.25),b:n-i*300});
   $('#floatUI').classList.add('hidden');Snd.splash();
-  toast('🌊 กระทงกำลังลอยไป… ขอให้สมหวัง');
+  toast(t('🌊 กระทงกำลังลอยไป… ขอให้สมหวัง'));
   const entry={type:'krathong',wish:cfg.wish.trim(),name:cfg.name.trim(),cat:cfg.cat,cfg:clone(cfg),date:Date.now(),pub:cfg.pub!==false};uk.entry=entry;Online.send(entry);
   if(Together.friend){uk.pairWith=Together.friend;}
   step=0;cfg.wish='';$('#wish').value='';$('#wishCount').textContent='0/140';cfg.seed=Math.random()*100;store.count++;store.items.unshift(entry);store.items=store.items.slice(0,50);save();updCount();
@@ -1174,23 +1313,23 @@ function showWish(a){
   const m=$('#wishModal');Snd.chime();
   $('#wReport').classList.add('hidden');
   if((a.remote||a.friend)&&a.entry){const e=a.entry,c=CATS.find(x=>x.id===e.cat)||CATS[0];
-    $('#wTitle').textContent=a.friend?`กระทงของ ${e.name||'เพื่อน'} 💞`:`คำอธิษฐานจาก ${e.name||'ผู้ไม่ประสงค์ออกนาม'}`;$('#wIcon').textContent=c.e;
-    $('#wText').textContent=e.wish?`“${e.wish}”`:'🔒 คำอธิษฐานนี้เป็นความลับ · '+pick(BLESS[e.cat]||BLESS.general);
+    $('#wTitle').textContent=LANG==='en'?(a.friend?`${e.name||'Your friend'}’s krathong 💞`:`A wish from ${e.name||'Anonymous'}`):(a.friend?`กระทงของ ${e.name||'เพื่อน'} 💞`:`คำอธิษฐานจาก ${e.name||'ผู้ไม่ประสงค์ออกนาม'}`);$('#wIcon').textContent=c.e;
+    $('#wText').textContent=e.wish?`“${e.wish}”`:t('🔒 คำอธิษฐานนี้เป็นความลับ · ')+pick(BLESS[e.cat]||BLESS.general);
     $('#wMeta').textContent=`${c.n}${e.created_at?' · '+fmtDate(Date.parse(e.created_at)):''}`;$('#wCard').classList.add('hidden');
-    if(a.remote&&e.id&&e.wish){$('#wReport').classList.remove('hidden');$('#wReport').onclick=()=>{Online.report(e.id);a.reported=true;ambient.splice(ambient.indexOf(a),1);closeModal('wishModal');toast('ขอบคุณที่ช่วยแจ้ง เราซ่อนข้อความนี้ให้แล้ว');};}
+    if(a.remote&&e.id&&e.wish){$('#wReport').classList.remove('hidden');$('#wReport').onclick=()=>{Online.report(e.id);a.reported=true;ambient.splice(ambient.indexOf(a),1);closeModal('wishModal');toast(t('ขอบคุณที่ช่วยแจ้ง เราซ่อนข้อความนี้ให้แล้ว'));};}
     openModal('wishModal');return;}
   if(a.mine&&a.entry){const e=a.entry,c=CATS.find(x=>x.id===e.cat)||CATS[0];
-    $('#wTitle').textContent='กระทงของคุณ 💖';$('#wIcon').textContent='🪷';
-    $('#wText').textContent=`“${e.wish}”`;$('#wMeta').textContent=`${c.e} ${c.n}${e.name?' · '+e.name:''} · ${fmtDate(e.date)}${e.lucky?' · 🔮 เลขมงคล '+e.lucky:''}`;
+    $('#wTitle').textContent=t('กระทงของคุณ 💖');$('#wIcon').textContent='🪷';
+    $('#wText').textContent=`“${e.wish}”`;$('#wMeta').textContent=`${c.e} ${c.n}${e.name?' · '+e.name:''} · ${fmtDate(e.date)}${e.lucky?' · '+t('🔮 เลขมงคล')+' '+e.lucky:''}`;
     $('#wCard').classList.remove('hidden');$('#wCard').onclick=()=>{closeModal('wishModal');curEntry=e;makeCard(e);};}
-  else{const cat=pick(CATS);$('#wTitle').textContent='คำอวยพรจากสายน้ำ ✨';$('#wIcon').textContent=cat.e;
-    $('#wText').textContent=pick(BLESS[cat.id]||BLESS.general);$('#wMeta').textContent='แตะกระทงใบอื่นเพื่อรับคำอวยพรเพิ่ม';$('#wCard').classList.add('hidden');}
+  else{const cat=pick(CATS);$('#wTitle').textContent=t('คำอวยพรจากสายน้ำ ✨');$('#wIcon').textContent=cat.e;
+    $('#wText').textContent=pick(BLESS[cat.id]||BLESS.general);$('#wMeta').textContent=t('แตะกระทงใบอื่นเพื่อรับคำอวยพรเพิ่ม');$('#wCard').classList.add('hidden');}
   openModal('wishModal');
 }
 
 /* ---------------- SHARE HELPERS ---------------- */
 const SITE_URL=()=>{try{return /^https?:/.test(location.href)?location.origin+location.pathname:'';}catch(e){return '';}};
-function shareText(e){const isL=e&&e.type==='lantern';return `ฉัน${isL?'ลอยโคม':'ลอยกระทง'}ออนไลน์ที่ Loy Krathong ๒๕๖๙ แล้ว ${isL?'🏮':'🪷'} มาลอยด้วยกันนะ!`;}
+function shareText(e){const isL=e&&e.type==='lantern';if(LANG==='en')return `I just ${isL?'released a sky lantern':'floated a krathong'} online at Loy Krathong 2026 ${isL?'🏮':'🪷'} Come float with me!`;return `ฉัน${isL?'ลอยโคม':'ลอยกระทง'}ออนไลน์ที่ Loy Krathong ๒๕๖๙ แล้ว ${isL?'🏮':'🪷'} มาลอยด้วยกันนะ!`;}
 function setLine(el,e,url){const u=url||SITE_URL();el.href='https://line.me/R/share?text='+encodeURIComponent(shareText(e)+(u?'\n'+u:''));}
 /* ---------------- FLOAT TOGETHER ---------------- */
 const b64e=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
@@ -1199,20 +1338,20 @@ const Together={friend:null,
   link(e){const u=SITE_URL();if(!u)return '';const c=e.type==='lantern'?sanitizeL(e.cfg):sanitizeCfg(e.cfg);c.seed=Math.round(c.seed);const o={n:(e.name||'').slice(0,30),t:e.type==='lantern'?'l':'k',c};return u+'?with='+b64e(o);},
   init(){let q=null;try{q=new URLSearchParams(location.search).get('with');}catch(e){}if(!q)return;
     let o;try{o=b64d(q);}catch(e){return;}if(!o||!o.c)return;
-    const name=String(o.n||'เพื่อน').slice(0,30);
+    const name=String(o.n||t('เพื่อน')).slice(0,30);
     if(o.t!=='l'){const c=sanitizeCfg(o.c);if(!c)return;
       const fr={x:W*.42,z:.3,vx:5,b:1,cfg:c,friend:true,entry:{name,cat:'love',wish:''}};ambient.push(fr);this.friend=fr;}
-    $('#invTxt').textContent=`${name} ${o.t==='l'?'ปล่อยโคม':'ลอยกระทง'}ไว้แล้ว และชวนคุณมาลอยด้วยกัน กระทงของคุณจะลอยเคียงข้างกระทงของเพื่อน`;
+    $('#invTxt').textContent=LANG==='en'?`${name} ${o.t==='l'?'released a sky lantern':'floated a krathong'} and invited you to join. Your krathong will float right next to theirs.`:`${name} ${o.t==='l'?'ปล่อยโคม':'ลอยกระทง'}ไว้แล้ว และชวนคุณมาลอยด้วยกัน กระทงของคุณจะลอยเคียงข้างกระทงของเพื่อน`;
     openModal('inviteModal');}
 };
 $('#invGo').onclick=()=>{closeModal('inviteModal');if(!Snd.ac)Snd.set(true);openBuilder(0,'krathong');};
-$('#invLater').onclick=()=>{closeModal('inviteModal');toast('💙 กระทงที่มีหัวใจสีฟ้าคือของเพื่อนคุณ');};
+$('#invLater').onclick=()=>{closeModal('inviteModal');toast(t('💙 กระทงที่มีหัวใจสีฟ้าคือของเพื่อนคุณ'));};
 $('#inviteBtn').onclick=async()=>{
   if(!curEntry)return;const link=Together.link(curEntry);
-  if(!link){toast('เปิดจากเว็บจริงบน Netlify เพื่อสร้างลิงก์ชวนเพื่อนได้');return;}
-  const text=`มาลอยกระทงคู่กันนะ 💞 ${curEntry.name?curEntry.name+' ':''}ลอยรอแล้ว`;
-  try{if(navigator.share){await navigator.share({text,url:link,title:'Loy Krathong ๒๕๖๙'});return;}}catch(err){if(err&&err.name==='AbortError')return;}
-  try{await navigator.clipboard.writeText(text+'\n'+link);toast('✅ คัดลอกลิงก์ชวนแล้ว ส่งให้เพื่อนได้เลย');}
+  if(!link){toast(t('เปิดจากเว็บจริงบน Netlify เพื่อสร้างลิงก์ชวนเพื่อนได้'));return;}
+  const text=LANG==='en'?`Let’s float krathongs together 💞 ${curEntry.name?curEntry.name+' is':'I’m'} waiting for you`:`มาลอยกระทงคู่กันนะ 💞 ${curEntry.name?curEntry.name+' ':''}ลอยรอแล้ว`;
+  try{if(navigator.share){await navigator.share({text,url:link,title:t('Loy Krathong ๒๕๖๙')});return;}}catch(err){if(err&&err.name==='AbortError')return;}
+  try{await navigator.clipboard.writeText(text+'\n'+link);toast(t('✅ คัดลอกลิงก์ชวนแล้ว ส่งให้เพื่อนได้เลย'));}
   catch(_){location.href='https://line.me/R/share?text='+encodeURIComponent(text+'\n'+link);}
 };
 $('#infoBtn').onclick=()=>openModal('infoModal');
@@ -1250,13 +1389,13 @@ const Online={on:false,total:0,totalL:0,seen:new Set(),skyL:[],
     if(rem.length>4){const deco=ambient.filter(a=>!a.remote&&!a.mine&&!a.friend);deco.slice(3).forEach(d=>ambient.splice(ambient.indexOf(d),1));}
   },
   showTotals(){const fmt=n=>Number(n||0).toLocaleString('th-TH');
-    $('#liveTxt').textContent=`ลอยแล้วทั้งประเทศ 🪷 ${fmt(this.total)} ใบ · 🏮 ${fmt(this.totalL)} ดวง`;$('#livePill').classList.remove('hidden');updCount();},
+    $('#liveTxt').textContent=LANG==='en'?`Floated so far 🪷 ${fmt(this.total)} · 🏮 ${fmt(this.totalL)}`:`ลอยแล้วทั้งประเทศ 🪷 ${fmt(this.total)} ใบ · 🏮 ${fmt(this.totalL)} ดวง`;$('#livePill').classList.remove('hidden');updCount();},
   async send(e,tries=0){
     if(!this.on)return;
     if(!tries){if(e.type==='lantern')this.totalL++;else this.total++;this.showTotals();}
     try{const r=await fetch('/api/float',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({type:e.type||'krathong',name:e.name,wish:e.pub?e.wish:'',cat:e.cat,cfg:e.type==='lantern'?Object.assign(sanitizeL(e.cfg),{qty:e.cfg.qty}):sanitizeCfg(e.cfg),pub:!!e.pub})});
-      if(!r.ok){if(r.status===429)toast('ลอยถี่เกินไปนิด รอสักครู่แล้วลองใหม่นะ');else if(r.status>=500&&tries<2)setTimeout(()=>this.send(e,tries+1),2000+Math.random()*4000*(tries+1));return;}
+      if(!r.ok){if(r.status===429)toast(t('ลอยถี่เกินไปนิด รอสักครู่แล้วลองใหม่นะ'));else if(r.status>=500&&tries<2)setTimeout(()=>this.send(e,tries+1),2000+Math.random()*4000*(tries+1));return;}
       const j=await r.json();if(j&&j.id){this.myIds().push(j.id);store.remoteIds=this.myIds().slice(-100);e.id=j.id;save();}
     }catch(err){if(tries<2)setTimeout(()=>this.send(e,tries+1),3000+Math.random()*5000);}
   },
@@ -1281,15 +1420,18 @@ function rollLucky(num){const A=$('#lkA'),B=$('#lkB'),T=$('#lkTh');clearInterval
   lkTimer=setInterval(()=>{n++;
     if(n<18)A.textContent=Math.floor(Math.random()*10);else if(n===18){A.textContent=num[0];A.classList.remove('rolling');void A.offsetWidth;A.classList.add('pop');Snd.chime();}
     if(n<26)B.textContent=Math.floor(Math.random()*10);else{B.textContent=num[1];B.classList.remove('rolling');void B.offsetWidth;B.classList.add('pop');
-      T.textContent='เลข '+thaiNum(num);clearInterval(lkTimer);if(Snd.on&&Snd.ac)[1046.5,1318.5].forEach((f,i)=>Snd.tone(f,1.2,'triangle',.07,i*.12));}
+      T.textContent=luckyLabel(num);clearInterval(lkTimer);if(Snd.on&&Snd.ac)[1046.5,1318.5].forEach((f,i)=>Snd.tone(f,1.2,'triangle',.07,i*.12));}
   },60);}
+function luckyLabel(num){return LANG==='en'?'No. '+num:'เลข '+thaiNum(num);}
+function resultLabels(e){const isL=e&&e.type==='lantern';
+  $('#againBtn').textContent=t(isL?'🏮 ปล่อยโคมอีก':'🪷 ลอยอีกกระทง');$('#otherBtn').textContent=t(isL?'🪷 ไปลอยกระทง':'🏮 ไปลอยโคม');}
 function showResult(e){
   curEntry=e;$('#blessTxt').textContent=pick(BLESS[e.cat]||BLESS.general);
   const had=!!e.lucky;const lk=luckyOf(e);if(!had)save();rollLucky(lk);
   const cat=CATS.find(c=>c.id===e.cat);
   $('#myWishTxt').textContent=`${cat.e} “${e.wish}”${e.name?' — '+e.name:''}`;
   const isL=e.type==='lantern';
-  $('#againBtn').textContent=isL?'🏮 ปล่อยโคมอีก':'🪷 ลอยอีกกระทง';$('#otherBtn').textContent=isL?'🪷 ไปลอยกระทง':'🏮 ไปลอยโคม';
+  resultLabels(e);
   setLine($('#lineBtn1'),e);
   openModal('resultModal');
 }
@@ -1304,15 +1446,15 @@ function showIdle(){if(builderEl.classList.contains('hidden')&&$('#floatUI').cla
 
 /* ---------------- HISTORY ---------------- */
 const thaiNum=v=>String(v).replace(/[0-9]/g,d=>'๐๑๒๓๔๕๖๗๘๙'[d]);
-function fmtDate(ts){try{return thaiNum(new Date(ts).toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'}));}catch(e){return '';}}
+function fmtDate(ts){try{return LANG==='en'?new Date(ts).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):thaiNum(new Date(ts).toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'}));}catch(e){return '';}}
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-$('#countChip').onclick=()=>{
-  $('#histSum').textContent=`ของฉัน: ลอยกระทง ${store.count} ใบ · ลอยโคม ${store.countL||0} ครั้ง`;
+function renderHist(){
+  $('#histSum').textContent=LANG==='en'?`Mine: ${store.count} krathong${store.count===1?'':'s'} · ${store.countL||0} lantern${(store.countL||0)===1?'':'s'}`:`ของฉัน: ลอยกระทง ${store.count} ใบ · ลอยโคม ${store.countL||0} ครั้ง`;
   $('#histList').innerHTML=store.items.length?store.items.map((it,i)=>{const c=CATS.find(x=>x.id===it.cat)||CATS[0];
-    return `<div class="hist-item"><div class="w">${it.type==='lantern'?'🏮':'🪷'} ${c.e} ${esc(it.wish)}<div class="d">${fmtDate(it.date)}${it.name?' · '+esc(it.name):''}${it.lucky?' · 🔮 '+esc(it.lucky):''}</div></div><button data-i="${i}">📸 การ์ด</button></div>`}).join('')
-    :'<div class="empty">ยังไม่มีรายการ — มาลอยกระทงหรือลอยโคมกันเลย 🪷🏮</div>';
-  openModal('histModal');
-};
+    return `<div class="hist-item"><div class="w">${it.type==='lantern'?'🏮':'🪷'} ${c.e} ${esc(it.wish)}<div class="d">${fmtDate(it.date)}${it.name?' · '+esc(it.name):''}${it.lucky?' · 🔮 '+esc(it.lucky):''}</div></div><button data-i="${i}">${t('📸 การ์ด')}</button></div>`}).join('')
+    :'<div class="empty">'+t('ยังไม่มีรายการ — มาลอยกระทงหรือลอยโคมกันเลย 🪷🏮')+'</div>';
+}
+$('#countChip').onclick=()=>{renderHist();openModal('histModal');};
 $('#histList').onclick=e=>{const b=e.target.closest('button[data-i]');if(!b)return;closeModal('histModal');curEntry=store.items[+b.dataset.i];makeCard(curEntry);};
 
 /* ---------------- SHARE CARD ---------------- */
@@ -1380,7 +1522,7 @@ async function makeCard(e){
   cardScenery(x,w,h,hor,e);
   x.textBaseline='alphabetic';
   // header
-  ctext(x,'✦  ๒๕๖๙ · ONLINE  ✦',520,262,'600 46px Kanit','rgba(255,211,107,.95)');
+  ctext(x,t('✦  ๒๕๖๙ · ONLINE  ✦'),520,262,'600 46px Kanit','rgba(255,211,107,.95)');
   x.globalCompositeOperation='lighter';glow(x,520,170,320,'rgba(255,79,216,A)',.22);x.globalCompositeOperation='source-over';
   ctext(x,'LOY KRATHONG',520,180,'800 90px Kanit',['#ffd36b','#ff7ad9','#8b7bff']);
   // wish box
@@ -1403,20 +1545,20 @@ async function makeCard(e){
   }else drawKrathong(x,540,1075,245,e.cfg||cfg,1.7);
   // footer
   ctext(x,fmtDate(e.date),540,1276,'400 30px Kanit','rgba(255,255,255,.8)');
-  ctext(x,e.type==='lantern'?'ลอยโคมออนไลน์ · ปลอดภัย ไม่เสี่ยงไฟไหม้ 🏮':'ลอยกระทงออนไลน์ · ขยะเป็นศูนย์ 🌱',540,1318,'400 26px Kanit','rgba(141,255,192,.9)');
+  ctext(x,t(e.type==='lantern'?'ลอยโคมออนไลน์ · ปลอดภัย ไม่เสี่ยงไฟไหม้ 🏮':'ลอยกระทงออนไลน์ · ขยะเป็นศูนย์ 🌱'),540,1318,'400 26px Kanit','rgba(141,255,192,.9)');
   const url=c.toDataURL('image/png');$('#cardImg').src=url;$('#dlLink').href=url;
   c.toBlob(b=>cardBlob=b,'image/png');
-  $('#shareMsg').textContent='บนมือถือ กดค้างที่รูปเพื่อบันทึกได้เลย';
+  $('#shareMsg').textContent=t('บนมือถือ กดค้างที่รูปเพื่อบันทึกได้เลย');
   setLine($('#lineBtn2'),e);closeModal('resultModal');openModal('cardModal');
 }
 $('#shareBtn').onclick=async()=>{
   const text=`${shareText(curEntry)} ${location.href.startsWith('http')?location.href:''}`;
   try{if(cardBlob&&navigator.canShare){const f=new File([cardBlob],'loyjai-krathong.png',{type:'image/png'});
-      if(navigator.canShare({files:[f]})){await navigator.share({files:[f],text,title:'Loy Krathong ๒๕๖๙'});return;}}
-    if(navigator.share){await navigator.share({text,title:'Loy Krathong ๒๕๖๙'});return;}
+      if(navigator.canShare({files:[f]})){await navigator.share({files:[f],text,title:t('Loy Krathong ๒๕๖๙')});return;}}
+    if(navigator.share){await navigator.share({text,title:t('Loy Krathong ๒๕๖๙')});return;}
   }catch(err){if(err&&err.name==='AbortError')return;}
-  try{await navigator.clipboard.writeText(text);$('#shareMsg').textContent='✅ คัดลอกข้อความชวนเพื่อนแล้ว — บันทึกรูปแล้วแปะลง LINE / IG ได้เลย';}
-  catch(_){$('#shareMsg').textContent='บันทึกรูปแล้วแชร์ลง LINE / IG / Facebook ได้เลย';}
+  try{await navigator.clipboard.writeText(text);$('#shareMsg').textContent=t('✅ คัดลอกข้อความชวนเพื่อนแล้ว — บันทึกรูปแล้วแปะลง LINE / IG ได้เลย');}
+  catch(_){$('#shareMsg').textContent=t('บันทึกรูปแล้วแชร์ลง LINE / IG / Facebook ได้เลย');}
 };
 
 /* ---------------- START ---------------- */
@@ -1438,6 +1580,7 @@ window.__online=Online;Together.init();Online.poll();
 let lastAct=Date.now();['pointerdown','keydown','touchstart'].forEach(ev=>addEventListener(ev,()=>{const idle=Date.now()-lastAct>30*60e3;lastAct=Date.now();if(idle)Online.poll();},{passive:true}));
 // poll every 60s while the tab is visible and someone touched the page in the last 30 min (keeps CDN/bandwidth cost low at 100k users)
 setInterval(()=>{if(!document.hidden&&Date.now()-lastAct<30*60e3)Online.poll();},60000);
+setLang(LANG,true);
 })();
 </script>
 </body>
