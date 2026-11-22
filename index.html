@@ -299,6 +299,17 @@ textarea::placeholder,.inp::placeholder{color:rgba(255,255,255,.38)}
 .gated .top,.gated #landing,.gated #credit{visibility:hidden}
 .gate{padding-top:calc(60px + env(safe-area-inset-top))}
 @media (max-height:640px){.gate-in{gap:6px}.cd .fl{padding:9px 0}.fclock .fl{padding:8px 2px}.gate .btn{padding:10px 22px}.gate-lbl{margin-top:0}}
+
+/* flip-clock date tiles: all four the same width and the same text size */
+.fclock{container-type:inline-size}
+.fclock .fl,.fclock .fl.big{flex:1 1 0;min-width:0;font-size:clamp(13px,4.6vw,30px);font-size:clamp(12px,5cqw,30px);padding:clamp(10px,3.4cqw,17px) 0;white-space:nowrap}
+.aclock{width:clamp(54px,16cqw,82px)}
+
+.fclock .fl::after,.cd .fl::after{height:1px;top:50%;background:rgba(0,0,0,.38);box-shadow:0 1px 0 rgba(255,255,255,.05)}
+
+.fclock .aclock{width:clamp(62px,22cqw,116px)}
+.ac-num{font:800 11px Kanit,sans-serif;fill:#1d1730}
+.fclock .fl,.fclock .fl.big{padding:clamp(8px,2.6cqw,14px) 0}
 </style>
 </head>
 <body>
@@ -321,10 +332,10 @@ textarea::placeholder,.inp::placeholder{color:rgba(255,255,255,.38)}
         <circle cx="50" cy="50" r="44" fill="url(#acF)"/>
         <g id="acTicks"></g>
         <text x="50" y="68.5" text-anchor="middle" class="ac-brand">🪷</text>
-        <g id="acH"><path d="M48.4 55 L49.2 29 Q50 26.8 50.8 29 L51.6 55 Z" fill="#1d1730"/></g>
-        <g id="acM"><path d="M48.9 56 L49.5 15 Q50 13.2 50.5 15 L51.1 56 Z" fill="#1d1730"/></g>
-        <g id="acS"><line x1="50" y1="62" x2="50" y2="12" stroke="#ff2d78" stroke-width="1" stroke-linecap="round"/><circle cx="50" cy="61" r="2.3" fill="#ff2d78"/></g>
-        <circle cx="50" cy="50" r="3.4" fill="#1d1730"/><circle cx="50" cy="50" r="1.6" fill="#ff2d78"/>
+        <g id="acH"><path d="M47.4 56 L48.7 29 Q50 25.6 51.3 29 L52.6 56 Z" fill="#1d1730"/></g>
+        <g id="acM"><path d="M48.2 57 L49.1 14 Q50 11.6 50.9 14 L51.8 57 Z" fill="#1d1730"/></g>
+        <g id="acS"><line x1="50" y1="63" x2="50" y2="11" stroke="#ff2d78" stroke-width="1.6" stroke-linecap="round"/><circle cx="50" cy="61.5" r="2.8" fill="#ff2d78"/></g>
+        <circle cx="50" cy="50" r="4.2" fill="#1d1730"/><circle cx="50" cy="50" r="2" fill="#ff2d78"/>
       </svg></div>
       <div class="fl" id="gDay"></div><div class="fl big" id="gDate"></div><div class="fl" id="gMon"></div><div class="fl" id="gYear"></div>
     </div>
@@ -1707,11 +1718,18 @@ const Gate=(()=>{const el=$('#gate');let skew=0,timer=null,last={},opened=false;
     tile('gDate',num(+new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Bangkok',day:'numeric'}).format(new Date(OPEN_AT))));
     tile('gMon',LANG==='en'?fmtP({month:'short'}).toUpperCase():fmtP({month:'short'}));
     const y=+new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Bangkok',year:'numeric'}).format(new Date(OPEN_AT));
-    tile('gYear',LANG==='en'?String(y%100).padStart(2,'0'):thaiNum(String((y+543)%100).padStart(2,'0')));face();}
+    tile('gYear',LANG==='en'?String(y%100).padStart(2,'0'):thaiNum(String((y+543)%100).padStart(2,'0')));face();fitTiles();}
+  function fitTiles(){const ts=[...document.querySelectorAll('.fclock .fl')];if(!ts.length||!ts[0].clientWidth)return;
+    ts[0].style.flex=LANG==='en'?'':'1.4 1 0';ts.forEach(t=>t.style.fontSize='');
+    const base=parseFloat(getComputedStyle(ts[0]).fontSize);
+    ts.forEach(t=>{const w=t.querySelector('.sz').getBoundingClientRect().width;if(!w)return;
+      t.style.fontSize=Math.min(base*t.clientWidth*.82/w,t.clientWidth*.58,52).toFixed(1)+'px';});}
+  addEventListener('resize',()=>{if(!el.classList.contains('hidden'))fitTiles();});
+  try{document.fonts.ready.then(()=>{if(!el.classList.contains('hidden'))fitTiles();});}catch(_){}
   function face(){const g=$('#acTicks');let h='';
     for(let i=0;i<60;i++){const hr=i%5===0,a=i*6*Math.PI/180,r1=hr?37.2:40.6,r2=42.4,x1=50+r1*Math.sin(a),y1=50-r1*Math.cos(a),x2=50+r2*Math.sin(a),y2=50-r2*Math.cos(a);
-      h+=`<line x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}" stroke="${i===0?'#ff2d78':hr?'#1d1730':'#bdb5cc'}" stroke-width="${hr?(i%15===0?2.4:1.6):.6}" stroke-linecap="round"/>`;}
-    [[12,0],[3,90],[6,180],[9,270]].forEach(([n,d])=>{const a=d*Math.PI/180,x=50+29.5*Math.sin(a),y=50-29.5*Math.cos(a)+3;h+=`<text class="ac-num" x="${x.toFixed(2)}" y="${y.toFixed(2)}" text-anchor="middle">${LANG==='en'?n:thaiNum(n)}</text>`;});
+      h+=`<line x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}" stroke="${i===0?'#ff2d78':hr?'#1d1730':'#9a90ae'}" stroke-width="${hr?(i%15===0?3:2.2):.9}" stroke-linecap="round"/>`;}
+    [[12,0],[3,90],[6,180],[9,270]].forEach(([n,d])=>{const a=d*Math.PI/180,x=50+28*Math.sin(a),y=50-28*Math.cos(a)+4;h+=`<text class="ac-num" x="${x.toFixed(2)}" y="${y.toFixed(2)}" text-anchor="middle">${LANG==='en'?n:thaiNum(n)}</text>`;});
     g.innerHTML=h;}
   let secDeg=null;
   function hands(){const b=new Date(now()+7*3600e3),h=b.getUTCHours()%12,m=b.getUTCMinutes(),sc=b.getUTCSeconds();
