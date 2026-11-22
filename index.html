@@ -208,6 +208,30 @@ textarea::placeholder,.inp::placeholder{color:rgba(255,255,255,.38)}
 .info-sec.safe{border-color:rgba(120,255,180,.35);background:rgba(20,80,50,.25)}
 @media (max-width:360px){.safe-pill{font-size:10.5px}}
 @media (max-height:500px){.safe-pill,.live-pill{display:none!important}}
+/* ---- keep clear of the "Powered by Netlify" badge (bottom-right, ~60px tall) ---- */
+.sheet{bottom:calc(64px + env(safe-area-inset-bottom));max-height:calc(100dvh - 204px)}
+.float-ui{bottom:calc(70px + env(safe-area-inset-bottom))}
+.hero-actions{bottom:calc(max(10dvh,78px) + env(safe-area-inset-bottom))}
+@media (min-width:900px){.sheet{bottom:84px;max-height:calc(100dvh - 160px)}}
+@media (max-height:500px){
+  .sheet{left:12px;right:auto;transform:none;bottom:6px;width:min(460px,55vw);max-height:calc(100dvh - 58px)}
+  .float-ui{bottom:10px;align-items:flex-start;padding-left:16px}
+  .hero-actions{bottom:calc(14px + env(safe-area-inset-bottom));padding-right:190px}
+}
+@media (max-height:500px) and (max-width:699px){.sheet{width:calc(100% - 24px)}}
+
+/* ---- lucky number ---- */
+.lucky{margin:2px 0 14px;padding:12px 10px 10px;border-radius:20px;background:radial-gradient(ellipse at 50% 0%,rgba(255,211,107,.22),rgba(255,211,107,.04) 70%);border:1px solid rgba(255,211,107,.45)}
+.lucky-lbl{font-size:14px;color:var(--gold);font-weight:500;letter-spacing:.5px}
+.lucky-row{display:flex;justify-content:center;gap:10px;margin:6px 0 2px}
+.lk{width:64px;height:76px;border-radius:16px;display:grid;place-items:center;font-size:50px;font-weight:800;line-height:1;color:#2a0838;
+  background:linear-gradient(180deg,#fff7d6,#ffd36b 60%,#f0a93a);box-shadow:0 8px 24px rgba(255,180,60,.45),inset 0 2px 0 rgba(255,255,255,.7);font-variant-numeric:tabular-nums}
+.lk.rolling{filter:blur(.6px);opacity:.9}
+.lk.pop{animation:lkpop .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes lkpop{0%{transform:scale(.6)}100%{transform:scale(1)}}
+.lucky-th{font-size:15px;color:#ffe7a8;min-height:20px;letter-spacing:4px}
+.lucky-note{font-size:11px;color:var(--mute);margin-top:2px}
+@media (max-height:500px){.lk{width:48px;height:56px;font-size:36px}.lucky{padding:8px;margin-bottom:10px}}
 </style>
 </head>
 <body>
@@ -313,6 +337,12 @@ textarea::placeholder,.inp::placeholder{color:rgba(255,255,255,.38)}
     <div class="moon">🌕</div>
     <h2>ขอให้สมปรารถนา</h2>
     <p class="bless" id="blessTxt"></p>
+    <div class="lucky" id="luckyBox">
+      <div class="lucky-lbl">🔮 เลขมงคลของคุณ</div>
+      <div class="lucky-row"><span class="lk" id="lkA">0</span><span class="lk" id="lkB">0</span></div>
+      <div class="lucky-th" id="lkTh">&nbsp;</div>
+      <div class="lucky-note">เพื่อความบันเทิงและเป็นสิริมงคลเท่านั้น</div>
+    </div>
     <div class="mywish" id="myWishTxt"></div>
     <div class="stack">
       <button class="btn primary" id="toCardBtn">📸 สร้างการ์ดแชร์</button>
@@ -461,7 +491,9 @@ const KEY='loyjai_v1';
 let store={count:0,items:[]};
 try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.items))store=s;}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}}
-function updCount(){$('#countNum').textContent=store.count;$('#countLNum').textContent=store.countL||0;}
+function updCount(){const on=window.__online&&window.__online.on;const f=n=>Number(n||0).toLocaleString('th-TH');
+  $('#countNum').textContent=f(on?window.__online.total:store.count);$('#countLNum').textContent=f(on?window.__online.totalL:(store.countL||0));
+  $('#countChip').title=on?'ยอดลอยรวมของทุกคน · แตะเพื่อดูกระทงของฉัน':'กระทงของฉัน';}
 updCount();
 
 /* ---------------- SCENE STATE ---------------- */
@@ -1139,7 +1171,7 @@ function showWish(a){
     openModal('wishModal');return;}
   if(a.mine&&a.entry){const e=a.entry,c=CATS.find(x=>x.id===e.cat)||CATS[0];
     $('#wTitle').textContent='กระทงของคุณ 💖';$('#wIcon').textContent='🪷';
-    $('#wText').textContent=`“${e.wish}”`;$('#wMeta').textContent=`${c.e} ${c.n}${e.name?' · '+e.name:''} · ${fmtDate(e.date)}`;
+    $('#wText').textContent=`“${e.wish}”`;$('#wMeta').textContent=`${c.e} ${c.n}${e.name?' · '+e.name:''} · ${fmtDate(e.date)}${e.lucky?' · 🔮 เลขมงคล '+e.lucky:''}`;
     $('#wCard').classList.remove('hidden');$('#wCard').onclick=()=>{closeModal('wishModal');curEntry=e;makeCard(e);};}
   else{const cat=pick(CATS);$('#wTitle').textContent='คำอวยพรจากสายน้ำ ✨';$('#wIcon').textContent=cat.e;
     $('#wText').textContent=pick(BLESS[cat.id]||BLESS.general);$('#wMeta').textContent='แตะกระทงใบอื่นเพื่อรับคำอวยพรเพิ่ม';$('#wCard').classList.add('hidden');}
@@ -1185,7 +1217,7 @@ function sanitizeCfg(c){if(!c||typeof c!=='object')return null;
 function sanitizeL(c){if(!c||typeof c!=='object')return null;return {shape:LSHAPES.some(x=>x.id===c.shape)?c.shape:'classic',
   color:LCOLORS.includes(c.color)?c.color:'#fff1d6',pattern:LPATTERNS.some(x=>x.id===c.pattern)?c.pattern:'none',qty:1,seed:Number.isFinite(+c.seed)?+c.seed%100:1};}
 /* ---------------- ONLINE: shared river (Netlify Functions + Supabase) ---------------- */
-const Online={on:false,seen:new Set(),skyL:[],
+const Online={on:false,total:0,totalL:0,seen:new Set(),skyL:[],
   myIds(){return store.remoteIds||(store.remoteIds=[]);},
   async poll(){
     if(!/^https?:/.test(location.protocol))return;
@@ -1193,8 +1225,8 @@ const Online={on:false,seen:new Set(),skyL:[],
       this.on=true;this.apply(j);}catch(e){this.on=false;}
   },
   apply(j){
-    const fmt=n=>Number(n||0).toLocaleString('th-TH');
-    $('#liveTxt').textContent=`ลอยแล้วทั้งประเทศ 🪷 ${fmt(j.total)} ใบ · 🏮 ${fmt(j.totalL)} ดวง`;$('#livePill').classList.remove('hidden');
+    // never go backwards (CDN cache may be up to 15s old, and we add our own floats optimistically)
+    this.total=Math.max(this.total,+j.total||0);this.totalL=Math.max(this.totalL,+j.totalL||0);this.showTotals();
     const mine=new Set(this.myIds());let added=0;
     for(const it of j.items.slice().reverse()){
       if(!it||this.seen.has(it.id))continue;this.seen.add(it.id);if(mine.has(it.id))continue;
@@ -1207,8 +1239,11 @@ const Online={on:false,seen:new Set(),skyL:[],
     // fewer random decorations once real ones exist
     if(rem.length>4){const deco=ambient.filter(a=>!a.remote&&!a.mine&&!a.friend);deco.slice(3).forEach(d=>ambient.splice(ambient.indexOf(d),1));}
   },
+  showTotals(){const fmt=n=>Number(n||0).toLocaleString('th-TH');
+    $('#liveTxt').textContent=`ลอยแล้วทั้งประเทศ 🪷 ${fmt(this.total)} ใบ · 🏮 ${fmt(this.totalL)} ดวง`;$('#livePill').classList.remove('hidden');updCount();},
   async send(e,tries=0){
     if(!this.on)return;
+    if(!tries){if(e.type==='lantern')this.totalL++;else this.total++;this.showTotals();}
     try{const r=await fetch('/api/float',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({type:e.type||'krathong',name:e.name,wish:e.pub?e.wish:'',cat:e.cat,cfg:e.type==='lantern'?Object.assign(sanitizeL(e.cfg),{qty:e.cfg.qty}):sanitizeCfg(e.cfg),pub:!!e.pub})});
       if(!r.ok){if(r.status===429)toast('ลอยถี่เกินไปนิด รอสักครู่แล้วลองใหม่นะ');else if(r.status>=500&&tries<2)setTimeout(()=>this.send(e,tries+1),2000+Math.random()*4000*(tries+1));return;}
@@ -1227,8 +1262,20 @@ let toastT;
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.remove('hidden');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.add('hidden'),3800);}
 
 let curEntry=null;
+/* lucky number: fixed per krathong (same wish+time -> same number, so history/card stay consistent) */
+function luckyOf(e){if(e.lucky)return e.lucky;let h=2166136261;const str=(e.wish||'')+'|'+(e.name||'')+'|'+(e.date||0)+'|'+(e.type||'');
+  for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}e.lucky=String(((h>>>0)%100)).padStart(2,'0');return e.lucky;}
+let lkTimer=null;
+function rollLucky(num){const A=$('#lkA'),B=$('#lkB'),T=$('#lkTh');clearInterval(lkTimer);T.innerHTML='&nbsp;';
+  A.classList.add('rolling');B.classList.add('rolling');A.classList.remove('pop');B.classList.remove('pop');let n=0;
+  lkTimer=setInterval(()=>{n++;
+    if(n<18)A.textContent=Math.floor(Math.random()*10);else if(n===18){A.textContent=num[0];A.classList.remove('rolling');void A.offsetWidth;A.classList.add('pop');Snd.chime();}
+    if(n<26)B.textContent=Math.floor(Math.random()*10);else{B.textContent=num[1];B.classList.remove('rolling');void B.offsetWidth;B.classList.add('pop');
+      T.textContent='เลข '+thaiNum(num);clearInterval(lkTimer);if(Snd.on&&Snd.ac)[1046.5,1318.5].forEach((f,i)=>Snd.tone(f,1.2,'triangle',.07,i*.12));}
+  },60);}
 function showResult(e){
   curEntry=e;$('#blessTxt').textContent=pick(BLESS[e.cat]||BLESS.general);
+  const had=!!e.lucky;const lk=luckyOf(e);if(!had)save();rollLucky(lk);
   const cat=CATS.find(c=>c.id===e.cat);
   $('#myWishTxt').textContent=`${cat.e} “${e.wish}”${e.name?' — '+e.name:''}`;
   const isL=e.type==='lantern';
@@ -1250,9 +1297,9 @@ const thaiNum=v=>String(v).replace(/[0-9]/g,d=>'๐๑๒๓๔๕๖๗๘๙'[
 function fmtDate(ts){try{return thaiNum(new Date(ts).toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'}));}catch(e){return '';}}
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 $('#countChip').onclick=()=>{
-  $('#histSum').textContent=`ลอยกระทง ${store.count} ใบ · ลอยโคม ${store.countL||0} ครั้ง`;
+  $('#histSum').textContent=`ของฉัน: ลอยกระทง ${store.count} ใบ · ลอยโคม ${store.countL||0} ครั้ง`;
   $('#histList').innerHTML=store.items.length?store.items.map((it,i)=>{const c=CATS.find(x=>x.id===it.cat)||CATS[0];
-    return `<div class="hist-item"><div class="w">${it.type==='lantern'?'🏮':'🪷'} ${c.e} ${esc(it.wish)}<div class="d">${fmtDate(it.date)}${it.name?' · '+esc(it.name):''}</div></div><button data-i="${i}">📸 การ์ด</button></div>`}).join('')
+    return `<div class="hist-item"><div class="w">${it.type==='lantern'?'🏮':'🪷'} ${c.e} ${esc(it.wish)}<div class="d">${fmtDate(it.date)}${it.name?' · '+esc(it.name):''}${it.lucky?' · 🔮 '+esc(it.lucky):''}</div></div><button data-i="${i}">📸 การ์ด</button></div>`}).join('')
     :'<div class="empty">ยังไม่มีรายการ — มาลอยกระทงหรือลอยโคมกันเลย 🪷🏮</div>';
   openModal('histModal');
 };
@@ -1377,7 +1424,7 @@ $('#brandBtn').onclick=goHome;$('#homeBtn').onclick=goHome;
 $('#soundBtn').onclick=()=>Snd.set(!Snd.on);
 document.addEventListener('visibilitychange',()=>{const bg=document.getElementById('bgm');if(document.hidden){if(bg)bg.pause();if(Snd.ac)Snd.ac.suspend();}else if(Snd.on){if(bg)bg.play().catch(()=>{});if(Snd.ac)Snd.ac.resume();}});
 resize();renderOpts();requestAnimationFrame(frame);
-Together.init();Online.poll();
+window.__online=Online;Together.init();Online.poll();
 let lastAct=Date.now();['pointerdown','keydown','touchstart'].forEach(ev=>addEventListener(ev,()=>{const idle=Date.now()-lastAct>30*60e3;lastAct=Date.now();if(idle)Online.poll();},{passive:true}));
 // poll every 60s while the tab is visible and someone touched the page in the last 30 min (keeps CDN/bandwidth cost low at 100k users)
 setInterval(()=>{if(!document.hidden&&Date.now()-lastAct<30*60e3)Online.poll();},60000);
