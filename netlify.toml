@@ -10,3 +10,29 @@
   for = "/bgm.mp3"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# basic security headers (no clickjacking, no MIME sniffing, no full-URL referrer leaks)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# hide source / setup files from the public website (the site only needs index.html + bgm.mp3)
+[[redirects]]
+  from = "/netlify/*"
+  to = "/404"
+  status = 404
+  force = true
+[[redirects]]
+  from = "/supabase*"
+  to = "/404"
+  status = 404
+  force = true
+[[redirects]]
+  from = "/README.md"
+  to = "/404"
+  status = 404
+  force = true
