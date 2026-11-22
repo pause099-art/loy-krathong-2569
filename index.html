@@ -1695,7 +1695,7 @@ let lastAct=Date.now();['pointerdown','keydown','touchstart'].forEach(ev=>addEve
 // poll every 60s while the tab is visible and someone touched the page in the last 30 min (keeps CDN/bandwidth cost low at 100k users)
 setInterval(()=>{if(!document.hidden&&Date.now()-lastAct<30*60e3)Online.poll();},60000);
 /* ---------------- COUNTDOWN GATE (ปิดระบบไว้จนถึงเวลาเปิด) ---------------- */
-const OPEN_AT=Date.parse('2026-11-24T00:00:00+07:00'); // ← เวลาเปิดระบบ (เวลาไทย) แก้ตรงนี้ที่เดียว
+const OPEN_AT=Date.parse('2026-11-24T09:00:00+07:00'); // ← เวลาเปิดระบบ (เวลาไทย) แก้ตรงนี้ที่เดียว
 const Gate=(()=>{const el=$('#gate');let skew=0,timer=null,last={},opened=false;
   const preview=(()=>{try{if(new URLSearchParams(location.search).get('preview')==='porch2569')sessionStorage.setItem('lk_prev','1');return sessionStorage.getItem('lk_prev')==='1';}catch(_){return false;}})();
   const now=()=>Date.now()+skew;
