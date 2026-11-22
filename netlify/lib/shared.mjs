@@ -1,6 +1,8 @@
 // Shared helpers for Loy Krathong 2569 functions (server-side only — keys never reach the browser)
-export const SB = process.env.SUPABASE_URL;
-const KEY = process.env.SUPABASE_SERVICE_KEY;
+// tolerate common paste mistakes: spaces, quotes, trailing "/" or "/rest/v1"
+const tidy = (v) => String(v || '').trim().replace(/^['"]|['"]$/g, '');
+export const SB = tidy(process.env.SUPABASE_URL).replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
+const KEY = tidy(process.env.SUPABASE_SERVICE_KEY);
 // New Supabase keys (sb_secret_...) must go ONLY in the apikey header (they are not JWTs).
 // Legacy service_role JWT keys also need Authorization: Bearer.
 export const sbHeaders = (extra = {}) =>
