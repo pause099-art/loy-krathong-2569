@@ -169,7 +169,7 @@ textarea::placeholder,.inp::placeholder{color:rgba(255,255,255,.38)}
 @media (max-width:360px){.top{padding:10px 10px}.brand{font-size:15px;gap:6px}.top-actions{gap:5px}.chip-top{height:36px;padding:0 10px;font-size:13px}.icon-btn{width:36px;height:36px;font-size:15px}
   .hero-btns{gap:8px}.hero-btns .btn{font-size:16px;padding-top:14px;padding-bottom:14px}}
 /* ---- responsive: landscape phones / short screens ---- */
-@media (max-height:500px){
+@media (max-height:500px) and (orientation:landscape){
   #landing{padding-top:54px}
   .title{font-size:clamp(30px,7vh,44px);line-height:1}
   .title-sub{font-size:16px;margin-top:4px}
@@ -185,7 +185,7 @@ textarea::placeholder,.inp::placeholder{color:rgba(255,255,255,.38)}
   .card{padding:16px 18px 14px}.card .moon{font-size:34px}.card h2{font-size:20px;margin:2px 0 6px}
   #cardImg{max-height:52dvh}
 }
-@media (max-height:500px) and (min-width:700px){.sheet{left:auto;right:12px;transform:none;width:min(460px,55vw)}@keyframes sheetIn{from{opacity:0;transform:translateY(40px)}}}
+@media (max-height:500px) and (orientation:landscape) and (min-width:700px){.sheet{left:auto;right:12px;transform:none;width:min(460px,55vw)}@keyframes sheetIn{from{opacity:0;transform:translateY(40px)}}}
 @media (min-width:900px) and (min-height:501px){
   #landing{padding-top:calc(11dvh + 30px)}
   .hero{max-width:min(92vw,1000px)}
@@ -207,18 +207,18 @@ textarea::placeholder,.inp::placeholder{color:rgba(255,255,255,.38)}
 .info-sec p{margin:0;font-size:14px;line-height:1.65;color:rgba(255,255,255,.85);text-wrap:pretty}
 .info-sec.safe{border-color:rgba(120,255,180,.35);background:rgba(20,80,50,.25)}
 @media (max-width:360px){.safe-pill{font-size:10.5px}}
-@media (max-height:500px){.safe-pill,.live-pill{display:none!important}}
+@media (max-height:500px) and (orientation:landscape){.safe-pill,.live-pill{display:none!important}}
 /* ---- keep clear of the "Powered by Netlify" badge (bottom-right, ~60px tall) ---- */
 .sheet{bottom:calc(64px + env(safe-area-inset-bottom));max-height:calc(100dvh - 204px)}
 .float-ui{bottom:calc(70px + env(safe-area-inset-bottom))}
 .hero-actions{bottom:calc(max(10dvh,78px) + env(safe-area-inset-bottom))}
 @media (min-width:900px){.sheet{bottom:84px;max-height:calc(100dvh - 160px)}}
-@media (max-height:500px){
+@media (max-height:500px) and (orientation:landscape){
   .sheet{left:12px;right:auto;transform:none;bottom:6px;width:min(460px,55vw);max-height:calc(100dvh - 58px)}
   .float-ui{bottom:10px;align-items:flex-start;padding-left:16px}
   .hero-actions{bottom:calc(14px + env(safe-area-inset-bottom));padding-right:190px}
 }
-@media (max-height:500px) and (max-width:699px){.sheet{width:calc(100% - 24px)}}
+@media (max-height:500px) and (orientation:landscape) and (max-width:699px){.sheet{width:calc(100% - 24px)}}
 
 /* ---- lucky number ---- */
 .lucky{margin:2px 0 14px;padding:12px 10px 10px;border-radius:20px;background:radial-gradient(ellipse at 50% 0%,rgba(255,211,107,.22),rgba(255,211,107,.04) 70%);border:1px solid rgba(255,211,107,.45)}
@@ -231,7 +231,11 @@ textarea::placeholder,.inp::placeholder{color:rgba(255,255,255,.38)}
 @keyframes lkpop{0%{transform:scale(.6)}100%{transform:scale(1)}}
 .lucky-th{font-size:15px;color:#ffe7a8;min-height:20px;letter-spacing:4px}
 .lucky-note{font-size:11px;color:var(--mute);margin-top:2px}
-@media (max-height:500px){.lk{width:48px;height:56px;font-size:36px}.lucky{padding:8px;margin-bottom:10px}}
+@media (max-height:500px) and (orientation:landscape){.lk{width:48px;height:56px;font-size:36px}.lucky{padding:8px;margin-bottom:10px}}
+/* ---- typing mode: when the phone keyboard is open, give the inputs room ---- */
+.sheet.typing .preview-wrap,.sheet.typing .sheet-hint,.sheet.typing .steps{display:none}
+.sheet.typing .step-body{padding-top:10px}
+.sheet.typing{max-height:calc(var(--vvh,100dvh) - 144px)}
 </style>
 </head>
 <body>
@@ -1085,6 +1089,12 @@ $('#lqtyOpts').onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;cfg
 $('#diceBtn').onclick=()=>{if(mode==='lantern'){cfgL={shape:pick(LSHAPES).id,color:pick(LCOLORS),pattern:pick(LPATTERNS).id,qty:pick(LQTY).v,seed:Math.random()*100};renderOpts();Snd.chime();return;}const r=randCfg();Object.assign(cfg,{base:r.base,flowers:r.flowers.length?r.flowers:['marigold'],accent:r.accent,candle:r.candle,incense:r.incense,lights:r.lights,cstyle:r.cstyle,topper:r.topper,seed:r.seed});renderOpts();Snd.chime();};
 $('#wish').oninput=e=>{cfg.wish=e.target.value;$('#wishCount').textContent=`${cfg.wish.length}/140`;$('#wishErr').textContent='';};
 $('#name').oninput=e=>cfg.name=e.target.value;
+// keyboard handling: hide the preview while typing; keep the sheet above the keyboard (visualViewport)
+(()=>{const isTouch=matchMedia('(pointer:coarse)').matches;
+  builderEl.addEventListener('focusin',e=>{if(isTouch&&e.target.matches('textarea,input')){builderEl.classList.add('typing');setTimeout(()=>e.target.scrollIntoView({block:'center',behavior:'smooth'}),250);}});
+  builderEl.addEventListener('focusout',()=>setTimeout(()=>{if(!builderEl.contains(document.activeElement)||!document.activeElement.matches('textarea,input'))builderEl.classList.remove('typing');},120));
+  const vv=window.visualViewport;if(vv){const upd=()=>document.documentElement.style.setProperty('--vvh',vv.height+'px');vv.addEventListener('resize',upd);upd();}
+})();
 $('#steps').onclick=e=>{const s=e.target.closest('[data-i]');if(s)showStep(+s.dataset.i);};
 
 let mode='krathong';
